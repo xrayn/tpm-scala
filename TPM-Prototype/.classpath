@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.scala-ide.sdt.launching.SCALA_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
+	<classpathentry kind="lib" path="libs/iaik_jtss_tcs_soap.jar"/>
+	<classpathentry kind="lib" path="libs/iaik_jtss_tcs-debug.jar" sourcepath="/home/ar/Documents/Masterarbeit/tpmstuff/java/jTSS_0.6/src/jtss_common/src/iaik/tc/tss/impl/csp"/>
+	<classpathentry kind="lib" path="libs/iaik_jtss_tools.jar"/>
+	<classpathentry kind="lib" path="libs/iaik_jtss_tsp_soap.jar"/>
+	<classpathentry kind="lib" path="libs/iaik_jtss_tsp-debug.jar"/>
+	<classpathentry kind="lib" path="ext-libs/activation.jar"/>
+	<classpathentry kind="lib" path="ext-libs/axis-ant.jar"/>
+	<classpathentry kind="lib" path="ext-libs/axis.jar"/>
+	<classpathentry kind="lib" path="ext-libs/commons-daemon.jar"/>
+	<classpathentry kind="lib" path="ext-libs/commons-discovery-0.2.jar"/>
+	<classpathentry kind="lib" path="ext-libs/commons-logging-1.0.4.jar"/>
+	<classpathentry kind="lib" path="ext-libs/hsqldbmin.jar"/>
+	<classpathentry kind="lib" path="ext-libs/jaxrpc.jar"/>
+	<classpathentry kind="lib" path="ext-libs/junit-4.4.jar"/>
+	<classpathentry kind="lib" path="ext-libs/log4j-1.2.8.jar"/>
+	<classpathentry kind="lib" path="ext-libs/mail.jar"/>
+	<classpathentry kind="lib" path="ext-libs/saaj.jar"/>
+	<classpathentry kind="lib" path="ext-libs/wsdl4j-1.5.1.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
