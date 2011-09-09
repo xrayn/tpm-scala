@@ -1,3 +1,4 @@
+package net.ra23.tpm.base;
 import java.math._;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -118,11 +119,11 @@ object TPMain {
     println(uuids);
     TPMContext.context.loadKeyByBlob(srk_, getKeyBlobData(aKey))
     TPMContext.context.getRegisteredKeysByUuidSystem(uuids.head._2).foreach(println);
-    val destKey = migrateKey()
+    //val destKey = migrateKey()
     val aKey2 = TpmBindingKey();
     //encrypt(getKeyNew("b"));
-    exportPublicKey(aKey2.getKey, "/tmp/foo");
-    TPMCrypto.decrypt(TPMCrypto.encrypt(importPublicKey("/tmp/foo"), "I AM A TEST"), aKey2.getKey)
+    TPMKeymanager.exportPublicKey(aKey2, "/tmp/foo");
+    TPMCrypto.decrypt(TPMCrypto.encrypt(TPMKeymanager.importPublicKey("/tmp/foo"), "I AM A TEST"), aKey2.getKey)
 
   }
   def getTpmVersion() = {
@@ -174,7 +175,7 @@ object TPMain {
     certifyKey.createKey(srk_, pcrComp);
     certifyKey.loadKey(srk_);
 
-    val keyUuid = getNewUuid(57005)
+    val keyUuid = TPMKeymanager.getNewUuid(57005)
     TPMContext.context.registerKey(
       certifyKey,
       TcTssConstants.TSS_PS_TYPE_SYSTEM,
@@ -184,98 +185,10 @@ object TPMain {
     uuids += keyUuid.toStringNoPrefix() -> keyUuid
     certifyKey
   }
-  protected def getNewUuid(prefix: Int = 0): TcTssUuid = {
-    val keyUuid = new TcTssUuid().init(prefix, 0, 0, 0.asInstanceOf[Short], 0.asInstanceOf[Short], TPMContext.context.getTpmObject().getRandom(6).asShortArray());
-    keyUuid
-  }
   def getKeyBlobData(someKey: TcIRsaKey): TcBlobData = {
     val bd: TcBlobData = someKey.getAttribData(TcTssConstants.TSS_TSPATTRIB_KEY_BLOB,
       TcTssConstants.TSS_TSPATTRIB_KEYBLOB_BLOB);
     TPMContext.context.loadKeyByBlob(srk_, bd)
     bd
   }
-  def migrateKey(): TcIRsaKey = {
-    // create the key of the migration authority
-    val maKey = TPMContext.context.createRsaKeyObject(TcTssConstants.TSS_KEY_SIZE_2048
-      | TcTssConstants.TSS_KEY_TYPE_MIGRATE | TcTssConstants.TSS_KEY_AUTHORIZATION);
-    keyUsgPolicy.assignToObject(maKey);
-    keyMigPolicy.assignToObject(maKey);
-    maKey.createKey(srk_, null);
-
-    // create the key (data) to migrate from
-    val srcKey = TPMContext.context.createRsaKeyObject(TcTssConstants.TSS_KEY_SIZE_2048
-      | TcTssConstants.TSS_KEY_TYPE_BIND | TcTssConstants.TSS_KEY_MIGRATABLE | TcTssConstants.TSS_KEY_AUTHORIZATION);
-    keyUsgPolicy.assignToObject(srcKey);
-    keyMigPolicy.assignToObject(srcKey);
-    srcKey.createKey(srk_, null);
-
-    // authorize the migration authority to be used and create migration blob
-    val keyAuth = tpm.authorizeMigrationTicket(maKey, TcTssConstants.TSS_MS_MIGRATE);
-    val out = srcKey.createMigrationBlob(srk_, keyAuth);
-    val random = out(0); // send this to the destination
-    val migData = out(1); // send this to Migration Authority
-
-    // create the migration data key object
-    val migDataKey = TPMContext.context.createRsaKeyObject(TcTssConstants.TSS_KEY_TYPE_LEGACY);
-    migDataKey.setAttribData(TcTssConstants.TSS_TSPATTRIB_KEY_BLOB,
-      TcTssConstants.TSS_TSPATTRIB_KEYBLOB_BLOB, migData);
-
-    // migrate the data (key)
-    maKey.loadKey(srk_);
-    pubKey.loadKey(srk_);
-    maKey.migrateKey(pubKey, migDataKey);
-
-    val migratedData = migDataKey.getAttribData(TcTssConstants.TSS_TSPATTRIB_KEY_BLOB,
-      TcTssConstants.TSS_TSPATTRIB_KEYBLOB_BLOB);
-
-    // create an key object for the migrated key
-    val destKey = TPMContext.context.createRsaKeyObject(TcTssConstants.TSS_KEY_SIZE_2048
-      | TcTssConstants.TSS_KEY_TYPE_BIND | TcTssConstants.TSS_KEY_MIGRATABLE | TcTssConstants.TSS_KEY_NO_AUTHORIZATION);
-
-    // convert the migration blob to create a normal wrapped key
-    destKey.convertMigrationBlob(pubKey, random, migratedData);
-
-    println(out(0).toHexString());
-    // create encdata object and test decrption
-
-    destKey
-    //maybe an TcBlobData has to be used for transporting to destination
-    // this key is used at the destination to encrypt data
-  }
-
-  /*
-   * dont know if this is needed!
-   */
-  def loadMigrationBlog(publicKey: TcIRsaKey, random: TcBlobData, migrationBlob: TcBlobData): TcIRsaKey = {
-    val encKey = TPMContext.context.createRsaKeyObject(TcTssConstants.TSS_KEY_SIZE_2048
-      | TcTssConstants.TSS_KEY_TYPE_BIND | TcTssConstants.TSS_KEY_MIGRATABLE | TcTssConstants.TSS_KEY_AUTHORIZATION);
-    encKey.convertMigrationBlob(publicKey, random, migrationBlob)
-    keyUsgPolicy.assignToObject(encKey)
-    //TPMContext.context.loadKeyByBlob(srk_, migrationBlob);
-    encKey
-
-  }
-  def exportPublicKey(aKey: TcIRsaKey, filename: String = "/tmp/key.pub") {
-    val file = new File(filename);
-    val foStream = new FileOutputStream(file);
-    val oStream = new ByteArrayOutputStream();
-    val bs = aKey.getPubKey().asByteArray()
-    //Writes a byte to the byte array output stream.
-    oStream.write(bs);
-    oStream.writeTo(foStream);
-    println("Key written into the file " + "/tmp/key.pub");
-    foStream.close();
-  }
-  def importPublicKey(filename: String): TcBlobData = {
-    val file = new File(filename);
-    val fiStream = new FileInputStream(file);
-
-    val length = file.length();
-    println("Reading file " + filename + " [" + length + "] Bytes")
-    val data = new Array[Byte](length.asInstanceOf[Int])
-    fiStream.read(data);
-    fiStream.close();
-    TcBlobData.newByteArray(data)
-  }
-
 }
