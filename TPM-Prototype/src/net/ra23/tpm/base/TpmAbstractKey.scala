@@ -26,8 +26,10 @@ abstract class TpmAbstractKey {
    */
   val key: TcIRsaKey = TPMContext.context.createRsaKeyObject(TPMKeymanager.keySize | keyType | migrateableType)
   applyPolicies(key)
-  key.createKey(TPMKeymanager.getSRK(), null)
-  key.loadKey(TPMKeymanager.getSRK())
+  val srk = TPMKeymanager.getSRK()
+  println("srk loaded:" + srk)
+  key.createKey(srk, null)
+  key.loadKey(srk)
 
   /*
    * generate a new uuid (for registering later)
@@ -36,8 +38,10 @@ abstract class TpmAbstractKey {
 
   val publicKey: TcIRsaKey = null
   def applyPolicies(key: TcIRsaKey) = {
-    TPMPolicy.applyPolicy(TPMPolicy.keyMigPolicy, key)
     TPMPolicy.applyPolicy(TPMPolicy.keyUsgPolicy, key)
+    println("UsagePolicy apllied");
+    TPMPolicy.applyPolicy(TPMPolicy.keyMigPolicy, key)
+    println("MigrationPolicy apllied");
   }
 
 

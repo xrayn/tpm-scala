@@ -114,17 +114,17 @@ object TPMain {
     //initAndLoadStorageRootKey()
     //println(getRandom())
     val key=TpmSigningKey();
-    println("key:"+key)
-    val aKey = getNewCertifiedKey()
-    println(uuids);
-    TPMContext.context.loadKeyByBlob(srk_, getKeyBlobData(aKey))
-    TPMContext.context.getRegisteredKeysByUuidSystem(uuids.head._2).foreach(println);
-    //val destKey = migrateKey()
+//    println("key:"+key)
+//    val aKey = getNewCertifiedKey()
+//    println(uuids);
+//    TPMContext.context.loadKeyByBlob(srk_, getKeyBlobData(aKey))
+//    TPMContext.context.getRegisteredKeysByUuidSystem(uuids.head._2).foreach(println);
+//    //val destKey = migrateKey()
     val aKey2 = TpmBindingKey();
     //encrypt(getKeyNew("b"));
     TPMKeymanager.exportPublicKey(aKey2, "/tmp/foo");
     TPMCrypto.decrypt(TPMCrypto.encrypt(TPMKeymanager.importPublicKey("/tmp/foo"), "I AM A TEST"), aKey2.getKey)
-
+//
   }
   def getTpmVersion() = {
     var tpmVersion: TcTpmVersion = null
