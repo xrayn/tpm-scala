@@ -1,0 +1,7 @@
+# ignore generated class files
+*.[class]
+# ignore files start with an dot
+.*
+#ignore ~ backup files
+!.gitignore
+*~
