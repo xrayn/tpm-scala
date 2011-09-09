@@ -4,4 +4,6 @@
 .*
 #ignore ~ backup files
 !.gitignore
+!.classpath
+!.project
 *~
