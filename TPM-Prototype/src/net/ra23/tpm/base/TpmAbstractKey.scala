@@ -10,7 +10,7 @@ import iaik.tc.tss.api.structs.tsp.TcUuidFactory;
 import net.ra23.tpm.config._;
 import net.ra23.tpm.context._;
 import net.ra23.tpm.crypt._;
-
+import net.ra23.tpm.debugger._;
 
 
 abstract class TpmAbstractKey {
@@ -20,14 +20,15 @@ abstract class TpmAbstractKey {
 
   val keyType: Long
   val migrateableType: Long
-
+  
+  val isSigned=false;
   /*
    * create and load the key into tpm
    */
   val key: TcIRsaKey = TPMContext.context.createRsaKeyObject(TPMKeymanager.keySize | keyType | migrateableType)
   applyPolicies(key)
   val srk = TPMKeymanager.getSRK()
-  println("srk loaded:" + srk)
+  TPMDebugger.log("srk loaded:" + srk)
   key.createKey(srk, null)
   key.loadKey(srk)
 
@@ -39,9 +40,9 @@ abstract class TpmAbstractKey {
   val publicKey: TcIRsaKey = null
   def applyPolicies(key: TcIRsaKey) = {
     TPMPolicy.applyPolicy(TPMPolicy.keyUsgPolicy, key)
-    println("UsagePolicy apllied");
+    TPMDebugger.log("UsagePolicy apllied");
     TPMPolicy.applyPolicy(TPMPolicy.keyMigPolicy, key)
-    println("MigrationPolicy apllied");
+    TPMDebugger.log("MigrationPolicy apllied");
   }
 
 

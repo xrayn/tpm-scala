@@ -11,8 +11,14 @@ import java.io._;
 import net.ra23.tpm.config._;
 import net.ra23.tpm.context._;
 import net.ra23.tpm.crypt._;
+import scala.collection.mutable._;
+//import org.apache.log4j.Logger;
+import net.ra23.tpm.debugger._;
+
 
 object TPMKeymanager {
+ 
+  
   val srk_ = TPMContext.context.getKeyByUuid(TcTssConstants.TSS_PS_TYPE_SYSTEM,
     TcUuidFactory.getInstance().getUuidSRK());
   val tpm = TPMContext.context.getTpmObject()
@@ -20,7 +26,8 @@ object TPMKeymanager {
    * size definition 
    */
   val keySize = TcTssConstants.TSS_KEY_SIZE_2048;
-
+  val bindingKeyDb=Map.empty[String, TpmBindingKey]
+  
   if (tpm == null || TPMContext.context == null) {
     println("tpm or  == null");
   }
@@ -28,9 +35,10 @@ object TPMKeymanager {
    * apply the policies 
    */
   TPMPolicy.applyPolicy(TPMPolicy.srkPolicy, srk_)
-  println("SRK Policy applied to srk")
+  TPMDebugger.log( "SRK Policy applied to srk")
   TPMPolicy.applyPolicy(TPMPolicy.tpmPolicy, tpm)
-  println("SRK Policy applied to tpm")
+  TPMDebugger.log("SRK Policy applied to tpm")
+  
 
   
 //  @deprecated def migrateKey(): TcIRsaKey = {
@@ -109,7 +117,7 @@ object TPMKeymanager {
     //Writes a byte to the byte array output stream.
     oStream.write(bs);
     oStream.writeTo(foStream);
-    println("Key written to the file " + filename);
+    TPMDebugger.log("Key written to the file " + filename);
     foStream.close();
   }
   def importPublicKey(filename: String): TcBlobData = {
@@ -117,15 +125,15 @@ object TPMKeymanager {
     val fiStream = new FileInputStream(file);
 
     val length = file.length();
-    println("Reading file " + filename + " [" + length + "] Bytes")
+    TPMDebugger.log("Reading file " + filename + " [" + length + "] Bytes")
     val data = new Array[Byte](length.asInstanceOf[Int])
     fiStream.read(data);
     fiStream.close();
     TcBlobData.newByteArray(data)
   }
   def getSRK() = {
-    println("getting srk")
-    println(srk_)
+    TPMDebugger.log("getting srk")
+    TPMDebugger.log(srk_)
     srk_
   }
   def getNewUuid(prefix: Int = 0): TcTssUuid = {
@@ -140,6 +148,15 @@ object TPMKeymanager {
   def createEmptyRsaKeyObject() = {
     TPMContext.context.createRsaKeyObject(TcTssConstants.TSS_KEY_SIZE_2048
       | TcTssConstants.TSS_KEY_TYPE_BIND | TcTssConstants.TSS_KEY_MIGRATABLE | TcTssConstants.TSS_KEY_AUTHORIZATION);
+  }
+  def createBindingKey()= {
+    val bindingKey= TpmBindingKey();
+    val uuid = bindingKey.keyUuid.toStringNoPrefix();
+    bindingKeyDb+=(bindingKey.keyUuid.toStringNoPrefix() -> bindingKey)
+    uuid
+  }
+  def getBindingKey(uuid: String) = {
+    bindingKeyDb(uuid)
   }
 
 }

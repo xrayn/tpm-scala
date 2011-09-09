@@ -48,7 +48,7 @@ import java.io._;
 import net.ra23.tpm.config._;
 import net.ra23.tpm.context._;
 import net.ra23.tpm.crypt._;
-
+import net.ra23.tpm.debugger._;
 
 object TPMain {
   val config = TPMConfiguration.fromXmlFile("/tmp/config.xml")
@@ -57,21 +57,22 @@ object TPMain {
   val TPM_MAN_ETHZ: TcBlobData = TcBlobData.newStringASCII("ETHZ")
   val hContext_ = tcs_.TcsiOpenContext()(1).asInstanceOf[Long]
   var uuids = HashMap.empty[String, TcTssUuid]
+  
   /**
    * The TPM context.
    */
   TPMContext.context.connect();
-  println(TPMContext.context.isConnected());
+  TPMDebugger.log(TPMContext.context.isConnected());
   /**
    * The TPM object.
    */
   val tpm = TPMContext.context.getTpmObject()
   if (tpm == null || TPMContext.context == null) {
-    println("tpm or  == null");
+    TPMDebugger.log("tpm or  == null");
   }
 
   var keyUuid: TcTssUuid = null;
-  
+
   val srkSecret: TcBlobData = TcBlobData.newString(TPMConfiguration.get("srkPassword"), false, TPMConfiguration.get("pwdEncoding"));
   val tpmSecret: TcBlobData = TcBlobData.newString(TPMConfiguration.get("tpmPassword"), false, TPMConfiguration.get("pwdEncoding"));
   val keySecret: TcBlobData = TcBlobData.newString(TPMConfiguration.get("keyPassword"), false, TPMConfiguration.get("pwdEncoding"));
@@ -113,18 +114,21 @@ object TPMain {
     // println(tpmManufactuerIs(TPM_MAN_ETHZ))
     //initAndLoadStorageRootKey()
     //println(getRandom())
-    val key=TpmSigningKey();
-//    println("key:"+key)
-//    val aKey = getNewCertifiedKey()
-//    println(uuids);
-//    TPMContext.context.loadKeyByBlob(srk_, getKeyBlobData(aKey))
-//    TPMContext.context.getRegisteredKeysByUuidSystem(uuids.head._2).foreach(println);
-//    //val destKey = migrateKey()
-    val aKey2 = TpmBindingKey();
+    val key = TpmSigningKey();
+    //    println("key:"+key)
+    //    val aKey = getNewCertifiedKey()
+    //    println(uuids);
+    //    TPMContext.context.loadKeyByBlob(srk_, getKeyBlobData(aKey))
+    //    TPMContext.context.getRegisteredKeysByUuidSystem(uuids.head._2).foreach(println);
+    //    //val destKey = migrateKey()
+    val aKey1 = TPMKeymanager.getBindingKey(TPMKeymanager.createBindingKey())
+    val aKey2 = TPMKeymanager.getBindingKey(TPMKeymanager.createBindingKey())
+    println(TPMKeymanager.bindingKeyDb)
     //encrypt(getKeyNew("b"));
     TPMKeymanager.exportPublicKey(aKey2, "/tmp/foo");
-    TPMCrypto.decrypt(TPMCrypto.encrypt(TPMKeymanager.importPublicKey("/tmp/foo"), "I AM A TEST"), aKey2.getKey)
-//
+    //TPMCrypto.decrypt(TPMCrypto.encrypt(TPMKeymanager.importPublicKey("/tmp/foo"), "I AM A TEST"), aKey2.getKey)
+    TPMCrypto.decrypt(TPMCrypto.encrypt(aKey2, "I AM A TEST"), aKey2)
+    //
   }
   def getTpmVersion() = {
     var tpmVersion: TcTpmVersion = null
@@ -154,7 +158,6 @@ object TPMain {
   def getRandom(): Long = {
     tpm.getRandom(1.asInstanceOf[Long]).asShortArray()(0).asInstanceOf[Long]
   }
-
 
   def getNewCertifiedKey(): TcIRsaKey = {
 
