@@ -26,7 +26,10 @@ object TPMConfiguration {
     }
   }
   def fromXmlFile(filename: String) = {
-    fromXML(scala.xml.XML.load(filename))
+    try fromXML(scala.xml.XML.load(filename)) 
+    catch {
+      case e: java.io.FileNotFoundException => fromXML(default)
+    }
     this
   }
   def get(key: String) = {
