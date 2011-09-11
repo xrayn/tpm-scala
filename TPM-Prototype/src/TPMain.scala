@@ -44,12 +44,13 @@ import iaik.tc.tss.impl.csp.TcCrypto;
 import scala.collection.mutable._;
 import scala.io._;
 import java.io._;
+import net.ra23.tpm.config._;
+import net.ra23.tpm.context._;
+import net.ra23.tpm.crypt._;
+
 
 object TPMain {
-  val tpmPassword = "12345"
-  val srkPassword = "12345"
-  val pwdEncoding = "UTF-16LE"
-  val keyPwd = "keyPwd"
+  val config = TPMConfiguration.fromXmlFile("/tmp/config.xml")
   var key: TcIRsaKey = null;
   val tcs_ = new TcTcsBindingLocal()
   val TPM_MAN_ETHZ: TcBlobData = TcBlobData.newStringASCII("ETHZ")
@@ -58,50 +59,49 @@ object TPMain {
   /**
    * The TPM context.
    */
-
-  val context: TcIContext = new TcTssContextFactory().newContextObject();
-  context.connect();
-  println(context.isConnected());
+  TPMContext.context.connect();
+  println(TPMContext.context.isConnected());
   /**
    * The TPM object.
    */
-  val tpm = context.getTpmObject()
-  if (tpm == null || context == null) {
-    println("tpm or context == null");
+  val tpm = TPMContext.context.getTpmObject()
+  if (tpm == null || TPMContext.context == null) {
+    println("tpm or  == null");
   }
 
   var keyUuid: TcTssUuid = null;
-  val srkSecret: TcBlobData = TcBlobData.newString(srkPassword, false, pwdEncoding);
-  val tpmSecret: TcBlobData = TcBlobData.newString(tpmPassword, false, pwdEncoding);
-  val keySecret: TcBlobData = TcBlobData.newString(keyPwd, false, pwdEncoding);
-  val srk_ = context.getKeyByUuid(TcTssConstants.TSS_PS_TYPE_SYSTEM,
+  
+  val srkSecret: TcBlobData = TcBlobData.newString(TPMConfiguration.get("srkPassword"), false, TPMConfiguration.get("pwdEncoding"));
+  val tpmSecret: TcBlobData = TcBlobData.newString(TPMConfiguration.get("tpmPassword"), false, TPMConfiguration.get("pwdEncoding"));
+  val keySecret: TcBlobData = TcBlobData.newString(TPMConfiguration.get("keyPassword"), false, TPMConfiguration.get("pwdEncoding"));
+  val srk_ = TPMContext.context.getKeyByUuid(TcTssConstants.TSS_PS_TYPE_SYSTEM,
     TcUuidFactory.getInstance().getUuidSRK());
 
   // alternative mechanism to get SRK instance
   // srk_ = context_.createRsaKeyObject(TcTssConstants.TSS_KEY_TSP_SRK);
 
   // set SRK policy
-  val srkPolicy: TcIPolicy = context.createPolicyObject(TcTssConstants.TSS_POLICY_USAGE);
+  val srkPolicy: TcIPolicy = TPMContext.context.createPolicyObject(TcTssConstants.TSS_POLICY_USAGE);
   srkPolicy.setSecret(TcTssConstants.TSS_SECRET_MODE_PLAIN, srkSecret);
   srkPolicy.assignToObject(srk_);
 
   // setup TPM policy
-  val tpmPolicy: TcIPolicy = context.createPolicyObject(TcTssConstants.TSS_POLICY_USAGE);
+  val tpmPolicy: TcIPolicy = TPMContext.context.createPolicyObject(TcTssConstants.TSS_POLICY_USAGE);
   tpmPolicy.setSecret(TcTssConstants.TSS_SECRET_MODE_PLAIN, tpmSecret);
   tpmPolicy.assignToObject(tpm);
   // create a key usage policy for this key
-  val keyUsgPolicy: TcIPolicy = context.createPolicyObject(TcTssConstants.TSS_POLICY_USAGE);
+  val keyUsgPolicy: TcIPolicy = TPMContext.context.createPolicyObject(TcTssConstants.TSS_POLICY_USAGE);
   keyUsgPolicy.setSecret(TcTssConstants.TSS_SECRET_MODE_PLAIN, keySecret);
 
   //create a key migration policy for this key
-  val keyMigPolicy: TcIPolicy = context.createPolicyObject(TcTssConstants.TSS_POLICY_MIGRATION);
+  val keyMigPolicy: TcIPolicy = TPMContext.context.createPolicyObject(TcTssConstants.TSS_POLICY_MIGRATION);
   keyMigPolicy.setSecret(TcTssConstants.TSS_SECRET_MODE_PLAIN, keySecret);
 
   // this is currently the pubkey of this client.
   // and so used for decryption.
   // in migrateKey this key is used to wrap the migrationkey (which is used for encryption at the destination)
 
-  val pubKey = context.createRsaKeyObject(TcTssConstants.TSS_KEY_SIZE_2048
+  val pubKey = TPMContext.context.createRsaKeyObject(TcTssConstants.TSS_KEY_SIZE_2048
     | TcTssConstants.TSS_KEY_TYPE_STORAGE | TcTssConstants.TSS_KEY_NO_AUTHORIZATION);
   keyUsgPolicy.assignToObject(pubKey);
   keyMigPolicy.assignToObject(pubKey);
@@ -112,17 +112,17 @@ object TPMain {
     // println(tpmManufactuerIs(TPM_MAN_ETHZ))
     //initAndLoadStorageRootKey()
     //println(getRandom())
-    println(getKeyNew())
-    println(getKeyNew())
+    val key=TpmSigningKey();
+    println("key:"+key)
     val aKey = getNewCertifiedKey()
     println(uuids);
-    context.loadKeyByBlob(srk_, getKeyBlobData(aKey))
-    context.getRegisteredKeysByUuidSystem(uuids.head._2).foreach(println);
+    TPMContext.context.loadKeyByBlob(srk_, getKeyBlobData(aKey))
+    TPMContext.context.getRegisteredKeysByUuidSystem(uuids.head._2).foreach(println);
     val destKey = migrateKey()
-    val aKey2 = getKeyNew("b");
+    val aKey2 = TpmBindingKey();
     //encrypt(getKeyNew("b"));
-    exportPublicKey(aKey2, "/tmp/foo");
-    decrypt(encrypt(importPublicKey("/tmp/foo"), "I AM A TEST"), aKey2)
+    exportPublicKey(aKey2.getKey, "/tmp/foo");
+    TPMCrypto.decrypt(TPMCrypto.encrypt(importPublicKey("/tmp/foo"), "I AM A TEST"), aKey2.getKey)
 
   }
   def getTpmVersion() = {
@@ -154,54 +154,19 @@ object TPMain {
     tpm.getRandom(1.asInstanceOf[Long]).asShortArray()(0).asInstanceOf[Long]
   }
 
-  def getKeyNew(aType: String = "s"): TcIRsaKey = {
-    var myType: Long = 0;
-    aType match {
-      case "s" => myType = TcTssConstants.TSS_KEY_TYPE_SIGNING
-      case "b" => myType = TcTssConstants.TSS_KEY_TYPE_BIND
-      case _ => myType = TcTssConstants.TSS_KEY_TYPE_SIGNING
-    }
-    var someKey: TcIRsaKey = context.createRsaKeyObject(
-      TcTssConstants.TSS_KEY_SIZE_2048 |
-        myType |
-        TcTssConstants.TSS_KEY_NOT_MIGRATABLE);
 
-    // create a key usage policy for this key
-    val keyUsgPolicy: TcIPolicy = context.createPolicyObject(TcTssConstants.TSS_POLICY_USAGE);
-    keyUsgPolicy.setSecret(TcTssConstants.TSS_SECRET_MODE_PLAIN, keySecret);
-    keyUsgPolicy.assignToObject(someKey);
-
-    //create a key migration policy for this key
-
-    keyMigPolicy.assignToObject(someKey);
-    someKey.createKey(srk_, null);
-    someKey.loadKey(srk_);
-    val keyUuid = getNewUuid()
-    context.registerKey(
-      someKey,
-      TcTssConstants.TSS_PS_TYPE_SYSTEM,
-      keyUuid,
-      TcTssConstants.TSS_PS_TYPE_SYSTEM,
-      TcUuidFactory.getInstance().getUuidSRK());
-    uuids += keyUuid.toStringNoPrefix() -> keyUuid
-
-    // save the public key to file under /tmp 
-
-    someKey
-
-  }
   def getNewCertifiedKey(): TcIRsaKey = {
 
     val pcrComp: TcIPcrComposite = null;
 
-    val storageKey: TcIRsaKey = context.createRsaKeyObject(TcTssConstants.TSS_KEY_TYPE_STORAGE
+    val storageKey: TcIRsaKey = TPMContext.context.createRsaKeyObject(TcTssConstants.TSS_KEY_TYPE_STORAGE
       | TcTssConstants.TSS_KEY_SIZE_2048 | TcTssConstants.TSS_KEY_AUTHORIZATION);
     keyUsgPolicy.assignToObject(storageKey);
     keyMigPolicy.assignToObject(storageKey);
     storageKey.createKey(srk_, pcrComp);
     storageKey.loadKey(srk_);
 
-    val certifyKey: TcIRsaKey = context.createRsaKeyObject(TcTssConstants.TSS_KEY_SIZE_2048
+    val certifyKey: TcIRsaKey = TPMContext.context.createRsaKeyObject(TcTssConstants.TSS_KEY_SIZE_2048
       | TcTssConstants.TSS_KEY_TYPE_SIGNING | TcTssConstants.TSS_KEY_MIGRATABLE |
       TcTssConstants.TSS_KEY_AUTHORIZATION);
     keyUsgPolicy.assignToObject(certifyKey);
@@ -210,7 +175,7 @@ object TPMain {
     certifyKey.loadKey(srk_);
 
     val keyUuid = getNewUuid(57005)
-    context.registerKey(
+    TPMContext.context.registerKey(
       certifyKey,
       TcTssConstants.TSS_PS_TYPE_SYSTEM,
       keyUuid,
@@ -220,25 +185,25 @@ object TPMain {
     certifyKey
   }
   protected def getNewUuid(prefix: Int = 0): TcTssUuid = {
-    val keyUuid = new TcTssUuid().init(prefix, 0, 0, 0.asInstanceOf[Short], 0.asInstanceOf[Short], context.getTpmObject().getRandom(6).asShortArray());
+    val keyUuid = new TcTssUuid().init(prefix, 0, 0, 0.asInstanceOf[Short], 0.asInstanceOf[Short], TPMContext.context.getTpmObject().getRandom(6).asShortArray());
     keyUuid
   }
   def getKeyBlobData(someKey: TcIRsaKey): TcBlobData = {
     val bd: TcBlobData = someKey.getAttribData(TcTssConstants.TSS_TSPATTRIB_KEY_BLOB,
       TcTssConstants.TSS_TSPATTRIB_KEYBLOB_BLOB);
-    context.loadKeyByBlob(srk_, bd)
+    TPMContext.context.loadKeyByBlob(srk_, bd)
     bd
   }
   def migrateKey(): TcIRsaKey = {
     // create the key of the migration authority
-    val maKey = context.createRsaKeyObject(TcTssConstants.TSS_KEY_SIZE_2048
+    val maKey = TPMContext.context.createRsaKeyObject(TcTssConstants.TSS_KEY_SIZE_2048
       | TcTssConstants.TSS_KEY_TYPE_MIGRATE | TcTssConstants.TSS_KEY_AUTHORIZATION);
     keyUsgPolicy.assignToObject(maKey);
     keyMigPolicy.assignToObject(maKey);
     maKey.createKey(srk_, null);
 
     // create the key (data) to migrate from
-    val srcKey = context.createRsaKeyObject(TcTssConstants.TSS_KEY_SIZE_2048
+    val srcKey = TPMContext.context.createRsaKeyObject(TcTssConstants.TSS_KEY_SIZE_2048
       | TcTssConstants.TSS_KEY_TYPE_BIND | TcTssConstants.TSS_KEY_MIGRATABLE | TcTssConstants.TSS_KEY_AUTHORIZATION);
     keyUsgPolicy.assignToObject(srcKey);
     keyMigPolicy.assignToObject(srcKey);
@@ -251,7 +216,7 @@ object TPMain {
     val migData = out(1); // send this to Migration Authority
 
     // create the migration data key object
-    val migDataKey = context.createRsaKeyObject(TcTssConstants.TSS_KEY_TYPE_LEGACY);
+    val migDataKey = TPMContext.context.createRsaKeyObject(TcTssConstants.TSS_KEY_TYPE_LEGACY);
     migDataKey.setAttribData(TcTssConstants.TSS_TSPATTRIB_KEY_BLOB,
       TcTssConstants.TSS_TSPATTRIB_KEYBLOB_BLOB, migData);
 
@@ -264,7 +229,7 @@ object TPMain {
       TcTssConstants.TSS_TSPATTRIB_KEYBLOB_BLOB);
 
     // create an key object for the migrated key
-    val destKey = context.createRsaKeyObject(TcTssConstants.TSS_KEY_SIZE_2048
+    val destKey = TPMContext.context.createRsaKeyObject(TcTssConstants.TSS_KEY_SIZE_2048
       | TcTssConstants.TSS_KEY_TYPE_BIND | TcTssConstants.TSS_KEY_MIGRATABLE | TcTssConstants.TSS_KEY_NO_AUTHORIZATION);
 
     // convert the migration blob to create a normal wrapped key
@@ -282,50 +247,13 @@ object TPMain {
    * dont know if this is needed!
    */
   def loadMigrationBlog(publicKey: TcIRsaKey, random: TcBlobData, migrationBlob: TcBlobData): TcIRsaKey = {
-    val encKey = context.createRsaKeyObject(TcTssConstants.TSS_KEY_SIZE_2048
+    val encKey = TPMContext.context.createRsaKeyObject(TcTssConstants.TSS_KEY_SIZE_2048
       | TcTssConstants.TSS_KEY_TYPE_BIND | TcTssConstants.TSS_KEY_MIGRATABLE | TcTssConstants.TSS_KEY_AUTHORIZATION);
     encKey.convertMigrationBlob(publicKey, random, migrationBlob)
     keyUsgPolicy.assignToObject(encKey)
-    //context.loadKeyByBlob(srk_, migrationBlob);
+    //TPMContext.context.loadKeyByBlob(srk_, migrationBlob);
     encKey
 
-  }
-  /*
-   * encrypt and decrypt should be in another module!
-   */
-  def encrypt(encKey: TcBlobData, plaintext: String): TcIEncData = {
-    val tmpKey = context.createRsaKeyObject(TcTssConstants.TSS_KEY_SIZE_2048
-      | TcTssConstants.TSS_KEY_TYPE_BIND | TcTssConstants.TSS_KEY_MIGRATABLE | TcTssConstants.TSS_KEY_AUTHORIZATION);
-    tmpKey.setAttribData(TcTssConstants.TSS_TSPATTRIB_KEY_BLOB, TcTssConstants.TSS_TSPATTRIB_KEYBLOB_PUBLIC_KEY, encKey)
-    encrypt(tmpKey, plaintext)
-  }
-  /*
-   * encrypt and decrypt should be in another module!
-   */
-  def encrypt(encKey: TcIRsaKey, plaintext: String): TcIEncData = {
-    val encData = context.createEncDataObject(TcTssConstants.TSS_ENCDATA_BIND);
-
-    // bind
-    val rawData = TcBlobData.newString(plaintext);
-
-    encData.bind(encKey, rawData);
-    val boundData = encData.getAttribData(TcTssConstants.TSS_TSPATTRIB_ENCDATA_BLOB,
-      TcTssConstants.TSS_TSPATTRIB_ENCDATABLOB_BLOB);
-    println(boundData.toHexStringNoWrap())
-    encData
-    //maybe has to be TcIBlobData for transportation
-
-  }
-
-  def decrypt(encData: TcIEncData, encKey: TcIRsaKey) {
-    /*
-     * 
-     * use our public key to decrypt the encrypted message from the destination.
-     */
-    keyUsgPolicy.assignToObject(encKey)
-    //encKey.loadKey(pubKey)
-    val unboundData = encData.unbind(encKey);
-    println(unboundData.toString());
   }
   def exportPublicKey(aKey: TcIRsaKey, filename: String = "/tmp/key.pub") {
     val file = new File(filename);
@@ -335,18 +263,19 @@ object TPMain {
     //Writes a byte to the byte array output stream.
     oStream.write(bs);
     oStream.writeTo(foStream);
-    println("Key writen into the file " + "/tmp/key.pub");
+    println("Key written into the file " + "/tmp/key.pub");
     foStream.close();
   }
-  def importPublicKey(filename: String): TcBlobData= {
+  def importPublicKey(filename: String): TcBlobData = {
     val file = new File(filename);
-     val fiStream = new FileInputStream(file);
-     
-     val length = file.length();
-     println("Reading file " + filename +" ["+length+"] Bytes")
-     val data = new Array[Byte](length.asInstanceOf[Int])
-        fiStream.read(data);
-        fiStream.close();
-     TcBlobData.newByteArray(data)
+    val fiStream = new FileInputStream(file);
+
+    val length = file.length();
+    println("Reading file " + filename + " [" + length + "] Bytes")
+    val data = new Array[Byte](length.asInstanceOf[Int])
+    fiStream.read(data);
+    fiStream.close();
+    TcBlobData.newByteArray(data)
   }
+
 }
