@@ -42,7 +42,8 @@ import iaik.tc.tss.api.structs.tsp.TcTssValidation;
 import iaik.tc.tss.impl.csp.TcBasicCrypto;
 import iaik.tc.tss.impl.csp.TcCrypto;
 import scala.collection.mutable._;
-
+import scala.io._;
+import java.io._;
 
 object TPMain {
   val tpmPassword = "12345"
@@ -95,17 +96,17 @@ object TPMain {
   //create a key migration policy for this key
   val keyMigPolicy: TcIPolicy = context.createPolicyObject(TcTssConstants.TSS_POLICY_MIGRATION);
   keyMigPolicy.setSecret(TcTssConstants.TSS_SECRET_MODE_PLAIN, keySecret);
-  
+
   // this is currently the pubkey of this client.
   // and so used for decryption.
   // in migrateKey this key is used to wrap the migrationkey (which is used for encryption at the destination)
-  
+
   val pubKey = context.createRsaKeyObject(TcTssConstants.TSS_KEY_SIZE_2048
-      | TcTssConstants.TSS_KEY_TYPE_STORAGE | TcTssConstants.TSS_KEY_NO_AUTHORIZATION);
-    keyUsgPolicy.assignToObject(pubKey);
-    keyMigPolicy.assignToObject(pubKey);
-    pubKey.createKey(srk_, null);
-  
+    | TcTssConstants.TSS_KEY_TYPE_STORAGE | TcTssConstants.TSS_KEY_NO_AUTHORIZATION);
+  keyUsgPolicy.assignToObject(pubKey);
+  keyMigPolicy.assignToObject(pubKey);
+  pubKey.createKey(srk_, null);
+
   def main(args: Array[String]): Unit = {
     // println(getTpmVersion.toString())
     // println(tpmManufactuerIs(TPM_MAN_ETHZ))
@@ -117,11 +118,12 @@ object TPMain {
     println(uuids);
     context.loadKeyByBlob(srk_, getKeyBlobData(aKey))
     context.getRegisteredKeysByUuidSystem(uuids.head._2).foreach(println);
-    val destKey=migrateKey()
-    val aKey2=getKeyNew("b");
+    val destKey = migrateKey()
+    val aKey2 = getKeyNew("b");
     //encrypt(getKeyNew("b"));
-    decrypt(encrypt(aKey2.getPubKey(), "I AM A TEST"), aKey2)
-    
+    exportPublicKey(aKey2, "/tmp/foo");
+    decrypt(encrypt(importPublicKey("/tmp/foo"), "I AM A TEST"), aKey2)
+
   }
   def getTpmVersion() = {
     var tpmVersion: TcTpmVersion = null
@@ -151,7 +153,7 @@ object TPMain {
   def getRandom(): Long = {
     tpm.getRandom(1.asInstanceOf[Long]).asShortArray()(0).asInstanceOf[Long]
   }
-  
+
   def getKeyNew(aType: String = "s"): TcIRsaKey = {
     var myType: Long = 0;
     aType match {
@@ -182,9 +184,11 @@ object TPMain {
       TcTssConstants.TSS_PS_TYPE_SYSTEM,
       TcUuidFactory.getInstance().getUuidSRK());
     uuids += keyUuid.toStringNoPrefix() -> keyUuid
-    
+
+    // save the public key to file under /tmp 
+
     someKey
-    
+
   }
   def getNewCertifiedKey(): TcIRsaKey = {
 
@@ -268,7 +272,7 @@ object TPMain {
 
     println(out(0).toHexString());
     // create encdata object and test decrption
-    
+
     destKey
     //maybe an TcBlobData has to be used for transporting to destination
     // this key is used at the destination to encrypt data
@@ -313,7 +317,7 @@ object TPMain {
 
   }
 
-def decrypt(encData: TcIEncData, encKey: TcIRsaKey) {
+  def decrypt(encData: TcIEncData, encKey: TcIRsaKey) {
     /*
      * 
      * use our public key to decrypt the encrypted message from the destination.
@@ -322,5 +326,27 @@ def decrypt(encData: TcIEncData, encKey: TcIRsaKey) {
     //encKey.loadKey(pubKey)
     val unboundData = encData.unbind(encKey);
     println(unboundData.toString());
+  }
+  def exportPublicKey(aKey: TcIRsaKey, filename: String = "/tmp/key.pub") {
+    val file = new File(filename);
+    val foStream = new FileOutputStream(file);
+    val oStream = new ByteArrayOutputStream();
+    val bs = aKey.getPubKey().asByteArray()
+    //Writes a byte to the byte array output stream.
+    oStream.write(bs);
+    oStream.writeTo(foStream);
+    println("Key writen into the file " + "/tmp/key.pub");
+    foStream.close();
+  }
+  def importPublicKey(filename: String): TcBlobData= {
+    val file = new File(filename);
+     val fiStream = new FileInputStream(file);
+     
+     val length = file.length();
+     println("Reading file " + filename +" ["+length+"] Bytes")
+     val data = new Array[Byte](length.asInstanceOf[Int])
+        fiStream.read(data);
+        fiStream.close();
+     TcBlobData.newByteArray(data)
   }
 }
