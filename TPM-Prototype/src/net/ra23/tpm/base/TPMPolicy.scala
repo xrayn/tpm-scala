@@ -12,25 +12,32 @@ import net.ra23.tpm.context._;
 import net.ra23.tpm.crypt._;
 
 object TPMPolicy {
-  val srkSecret: TcBlobData = TcBlobData.newString(TPMConfiguration.get("srkPassword"), false, TPMConfiguration.get("pwdEncoding"));
-  val tpmSecret: TcBlobData = TcBlobData.newString(TPMConfiguration.get("tpmPassword"), false, TPMConfiguration.get("pwdEncoding"));
-  val keySecret: TcBlobData = TcBlobData.newString(TPMConfiguration.get("keyPassword"), false, TPMConfiguration.get("pwdEncoding"));
 
   // set SRK policy
   val srkPolicy: TcIPolicy = TPMContext.context.createPolicyObject(TcTssConstants.TSS_POLICY_USAGE);
-  srkPolicy.setSecret(TcTssConstants.TSS_SECRET_MODE_PLAIN, srkSecret);
+  applyConfigSecretToPolicy(srkPolicy, "srkPassword")
   // setup TPM policy
   val tpmPolicy: TcIPolicy = TPMContext.context.createPolicyObject(TcTssConstants.TSS_POLICY_USAGE);
-  tpmPolicy.setSecret(TcTssConstants.TSS_SECRET_MODE_PLAIN, tpmSecret);
+  applyConfigSecretToPolicy(tpmPolicy, "tpmPassword")
   
     // create a key usage policy for this key
   val keyUsgPolicy: TcIPolicy = TPMContext.context.createPolicyObject(TcTssConstants.TSS_POLICY_USAGE);
-  TPMPolicy.keyUsgPolicy.setSecret(TcTssConstants.TSS_SECRET_MODE_PLAIN, keySecret);
+  applyConfigSecretToPolicy(keyUsgPolicy, "keyPassword")
     //create a key migration policy for this key
   val keyMigPolicy: TcIPolicy = TPMContext.context.createPolicyObject(TcTssConstants.TSS_POLICY_MIGRATION);
-  TPMPolicy.keyMigPolicy.setSecret(TcTssConstants.TSS_SECRET_MODE_PLAIN, keySecret);
+  applyConfigSecretToPolicy(keyUsgPolicy, "keyPassword")
   
+  /**
+   * applies a Policy to an object. Its just a Wrapper for better handling.
+   */
   def applyPolicy(policy: TcIPolicy, obj: TcIAuthObject) {
     policy.assignToObject(obj)
+  }
+  /**
+   * read a config entry from the config object and set the password for the policy
+   */
+  private def applyConfigSecretToPolicy(policy: TcIPolicy, configEntry: String) {
+    val secretAsBlob = TcBlobData.newString(TPMConfiguration.get(configEntry), false, TPMConfiguration.get("pwdEncoding"));
+    policy.setSecret(TcTssConstants.TSS_SECRET_MODE_PLAIN, secretAsBlob);
   }
 }

@@ -15,12 +15,6 @@ import net.ra23.tpm.crypt._;
 
 abstract class TpmAbstractKey {
   /*
-   * configuration
-   */
-  val config = TPMConfiguration.fromXmlFile("/tmp/config.xml")
-
-
-  /*
    * abstract keytype definition is set in concrete class
    */
 
@@ -47,15 +41,15 @@ abstract class TpmAbstractKey {
   }
 
 
-  def getPublicKey() {
-    publicKey.getPubKey()
+  def getPublicKey() = {
+    key.getPubKey()
   }
   def getKey() = {
     key
   }
   override def toString() = {
     "Key:\n" +
-      "Public: " + key.getPubKey().toHexStringNoWrap() + "\n" +
+      "Public: " + getPublicKey().toHexStringNoWrap() + "\n" +
       "Unique: " + keyUuid.toStringNoPrefix()
   }
 
