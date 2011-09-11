@@ -25,7 +25,7 @@ object TPMPolicy {
   applyConfigSecretToPolicy(keyUsgPolicy, "keyPassword")
     //create a key migration policy for this key
   val keyMigPolicy: TcIPolicy = TPMContext.context.createPolicyObject(TcTssConstants.TSS_POLICY_MIGRATION);
-  applyConfigSecretToPolicy(keyUsgPolicy, "keyPassword")
+  applyConfigSecretToPolicy(keyMigPolicy, "keyPassword")
   
   /**
    * applies a Policy to an object. Its just a Wrapper for better handling.
@@ -37,6 +37,7 @@ object TPMPolicy {
    * read a config entry from the config object and set the password for the policy
    */
   private def applyConfigSecretToPolicy(policy: TcIPolicy, configEntry: String) {
+    println("pass: "+TPMConfiguration.get(configEntry));
     val secretAsBlob = TcBlobData.newString(TPMConfiguration.get(configEntry), false, TPMConfiguration.get("pwdEncoding"));
     policy.setSecret(TcTssConstants.TSS_SECRET_MODE_PLAIN, secretAsBlob);
   }
