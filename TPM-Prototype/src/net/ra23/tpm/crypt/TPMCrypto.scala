@@ -14,6 +14,11 @@ import net.ra23.tpm.base._;
 
 
 object TPMCrypto {
+  
+  def encrypt(encKey: TpmBindingKey, plainData: String): TcIEncData = {
+    encrypt(encKey.getKey(), plainData)
+  }
+  
   /*
    * encrypt and decrypt should be in another module!
    */
@@ -39,7 +44,7 @@ object TPMCrypto {
 
   }
   
-  def decrypt (encData: TcIEncData, encKey: TpmAbstractKey) {
+  def decrypt (encData: TcIEncData, encKey: TpmBindingKey) {
     decrypt(encData, encKey.getKey())
   }
   

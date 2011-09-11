@@ -1,10 +1,11 @@
 package net.ra23.tpm.base
 import iaik.tc.tss.api.tspi.TcIPolicy;
+
 import iaik.tc.tss.api.constants.tsp.TcTssConstants;
 import iaik.tc.tss.api.structs.common.TcBlobData;
 import iaik.tc.tss.api.tspi.TcIRsaKey;
 import iaik.tc.tss.api.tspi.TcIAuthObject;
-
+import net.ra23.tpm.debugger._;
 
 
 import net.ra23.tpm.config._;
@@ -37,7 +38,7 @@ object TPMPolicy {
    * read a config entry from the config object and set the password for the policy
    */
   private def applyConfigSecretToPolicy(policy: TcIPolicy, configEntry: String) {
-    println("pass: "+TPMConfiguration.get(configEntry));
+    TPMDebugger.log("pass: "+TPMConfiguration.get(configEntry));
     val secretAsBlob = TcBlobData.newString(TPMConfiguration.get(configEntry), false, TPMConfiguration.get("pwdEncoding"));
     policy.setSecret(TcTssConstants.TSS_SECRET_MODE_PLAIN, secretAsBlob);
   }
