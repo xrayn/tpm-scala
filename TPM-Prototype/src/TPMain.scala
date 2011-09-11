@@ -315,6 +315,7 @@ object TPMain {
 
 def decrypt(encData: TcIEncData, encKey: TcIRsaKey) {
     /*
+     * 
      * use our public key to decrypt the encrypted message from the destination.
      */
     keyUsgPolicy.assignToObject(encKey)
