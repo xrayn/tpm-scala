@@ -54,17 +54,17 @@ object TPMCrypto {
      *encDataObject.setAttribData(TcTssConstants.TSS_TSPATTRIB_ENCDATA_BLOB, TcTssConstants.TSS_TSPATTRIB_ENCDATABLOB_BLOB, iaik.tc.tss.impl.csp.TcCrypto.pubEncryptRsaOaepSha1Mgf1(pubKey, boundData.getEncoded()))
     */
     encDataObject.setAttribData(TcTssConstants.TSS_TSPATTRIB_ENCDATA_BLOB, TcTssConstants.TSS_TSPATTRIB_ENCDATABLOB_BLOB, encData)
-    
+
     TPMDebugger.log("------ Enrypting FINISHED ---------");
     encDataObject
   }
-  
+
   def encryptByTpm(encKey: TpmBindingKey, plainData: String): TcIEncData = {
     TPMDebugger.log("------ Enrypting TPM STARTED -----");
     val result = encrypt(encKey.getKey(), plainData)
     TPMDebugger.log("------ Enrypting FINISHED ---------");
     result
-    
+
   }
 
   /*
