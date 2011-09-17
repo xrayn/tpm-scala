@@ -127,7 +127,11 @@ object TPMain {
     //encrypt(getKeyNew("b"));
     TPMKeymanager.exportPublicKey(aKey2, "/tmp/foo");
     //TPMCrypto.decrypt(TPMCrypto.encrypt(TPMKeymanager.importPublicKey("/tmp/foo"), "I AM A TEST"), aKey2.getKey)
-    TPMCrypto.decrypt(TPMCrypto.encrypt(aKey2, "I AM A TEST"), aKey2)
+    TPMCrypto.decrypt(TPMCrypto.encryptByTpm(aKey2, "I AM A TEST 1"), aKey2)
+    TPMCrypto.decrypt(TPMCrypto.encrypt(aKey2, "I AM A TEST 2"), aKey2)
+    TPMCrypto.decrypt(TPMCrypto.encrypt(aKey2, "I AM A TEST 3"), aKey2)
+    TPMCrypto.decrypt(TPMCrypto.encrypt(aKey2, "I AM A TEST 4"), aKey2)
+    
     //
   }
   def getTpmVersion() = {
