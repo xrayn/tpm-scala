@@ -4,7 +4,7 @@ import scala.actors.Actor
 import scala.actors.Actor._
 
 import net.ra23.tpm.debugger._;
-import net.ra23.batman.messagetypes._;
+import net.ra23.batman.messages.types._;
 import net.ra23.tpm._;
 
 
@@ -18,7 +18,7 @@ object MsgDispatcher extends Actor {
           case msg: String if msg.startsWith("01:") => {
             //TPMDebugger.log("State [1] => received [" + msg.length() + "]: " + msg);
             val message = new  TmcMessage(msg);
-            net.ra23.batman.ConnectionStorage.insert(message.mac, message);
+            net.ra23.batman.ConnectionStorage.update(message.mac, message);
             
           }
           case msg: String if msg.startsWith("02:") => {
