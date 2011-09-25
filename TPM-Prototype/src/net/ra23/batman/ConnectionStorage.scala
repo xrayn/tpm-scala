@@ -27,6 +27,7 @@ object ConnectionStorage {
       case msg: TmcMessage if (!inDatabase(db("state1"), mac) && !inDatabase(db("state2"), mac) && !inDatabase(db("state3"), mac)) => db("state1") += (mac -> msg);
       case msg: TmqMessage if (inDatabase(db("state1"), mac) && !inDatabase(db("state2"), mac) && !inDatabase(db("state3"), mac)) => db("state2") += (mac -> msg); db("state1") -= (mac)
       case msg: TmdMessage if (!inDatabase(db("state1"), mac) && inDatabase(db("state2"), mac) && !inDatabase(db("state3"), mac)) => db("state3") += (mac -> msg); db("state2") -= (mac)
+      case msg: TmcMessage if (!inDatabase(db("state1"), mac) && !inDatabase(db("state2"), mac) && inDatabase(db("state3"), mac)) => db("state1") += (mac -> msg); db("state3") -= (mac);
       case msg: BasicMessage => TPMDebugger.log("Dropping" + msg + " " + state);
       case _ => TPMDebugger.log("Unknown message");
     }
@@ -51,5 +52,14 @@ object ConnectionStorage {
   }
   def inDatabase(database: Map[String, BasicMessage], key: String): Boolean = {
     database.isDefinedAt(key)
+  }
+  def asList(state: String): List[List[Any]] = {
+    var result = List(List("Line","Mac", "Message"));
+    var count =1;
+    for (row <- db(state)) {
+       result =  List(count.toString(), row._1, row._2.toString()) :: result
+       count=count+1;
+    }
+    result.reverse
   }
 }

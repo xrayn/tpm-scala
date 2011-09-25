@@ -11,6 +11,7 @@ object Dispatchertest {
   val file = DeviceReaderActor.file
   val device = DeviceReaderActor.device
   def main(args: Array[String]): Unit = {
+    
     TPMDebugger.log("Start")
     TPMDebugger.log("infile loaded");
     Thread.sleep(500)
