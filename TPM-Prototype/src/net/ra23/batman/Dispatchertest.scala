@@ -11,7 +11,7 @@ object Dispatchertest {
   val file = DeviceReaderActor.file
   val device = DeviceReaderActor.device
   def main(args: Array[String]): Unit = {
-    
+
     TPMDebugger.log("Start")
     TPMDebugger.log("infile loaded");
     Thread.sleep(500)
@@ -20,7 +20,24 @@ object Dispatchertest {
     DeviceReaderActor ! "START"
     try {
       while (true) {
-        device.write(scala.Console.readLine("Type your message:").getBytes())
+        val command = scala.Console.readLine("Type your command:");
+
+        command match {
+          case c: String if command == "p" => {
+            println("State1")
+            println(net.ra23.batman.Tabulator.format(net.ra23.batman.ConnectionStorage.asList("state1")))
+            println("State2")
+            println(net.ra23.batman.Tabulator.format(net.ra23.batman.ConnectionStorage.asList("state2")))
+            println("State3")
+            println(net.ra23.batman.Tabulator.format(net.ra23.batman.ConnectionStorage.asList("state3")))
+          }
+          case c: String if command.startsWith("inject") => {
+            val inject = c.replace("inject ", "").getBytes()
+            device.write(inject)
+          }
+          case _ => println("error in command");
+        }
+        //device.write(scala.Console.readLine("Type your message:").getBytes())
         Thread.sleep(100);
       }
     } catch {

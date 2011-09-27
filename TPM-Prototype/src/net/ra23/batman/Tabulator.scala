@@ -14,7 +14,8 @@ object Tabulator {
   }
 
   def formatRows(rowSeparator: String, rows: Seq[String]): String = (
-    rowSeparator ::
+    // first \n is for log4j
+      "\n"::rowSeparator ::
     rows.head ::
     rowSeparator ::
     rows.tail.toList :::

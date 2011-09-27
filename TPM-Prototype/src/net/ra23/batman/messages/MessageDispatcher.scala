@@ -12,12 +12,12 @@ object MsgDispatcher extends Actor {
     //TPMDebugger.log("myActor sleeps 1000");
     //Thread.sleep(1000)
     //println(net.ra23.batman.ConnectionStorage.asList());
-    println("State1")
-    println(net.ra23.batman.Tabulator.format(net.ra23.batman.ConnectionStorage.asList("state1")))
-    println("State2")
-    println(net.ra23.batman.Tabulator.format(net.ra23.batman.ConnectionStorage.asList("state2")))
-    println("State3")
-    println(net.ra23.batman.Tabulator.format(net.ra23.batman.ConnectionStorage.asList("state3")))
+    TPMDebugger.log("State1","debug")
+    TPMDebugger.log(net.ra23.batman.Tabulator.format(net.ra23.batman.ConnectionStorage.asList("state1")),"debug")
+    TPMDebugger.log("State2","debug")
+    TPMDebugger.log(net.ra23.batman.Tabulator.format(net.ra23.batman.ConnectionStorage.asList("state2")),"debug")
+    TPMDebugger.log("State3","debug")
+    TPMDebugger.log(net.ra23.batman.Tabulator.format(net.ra23.batman.ConnectionStorage.asList("state3")),"debug")
     react {
       case msg: String if msg.startsWith("01:") => {
         //TPMDebugger.log("State [1] => received [" + msg.length() + "]: " + msg);
