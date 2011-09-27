@@ -22,18 +22,34 @@ object MsgDispatcher extends Actor {
       case msg: String if msg.startsWith("01:") => {
         //TPMDebugger.log("State [1] => received [" + msg.length() + "]: " + msg);
         val message = new TmcMessage(msg);
-        net.ra23.batman.ConnectionStorage.update(message.mac, message);
+        val isUpdated= net.ra23.batman.ConnectionStorage.update(message.mac, message)
+        if ( isUpdated && message.isFromClient){
+          DeviceWriterActor ! message.getResponseMessage()
+        } else if (isUpdated && ! message.isFromClient) {
+          DeviceWriterActor ! "02::c::CLIENT_MAC::CLIENT_QUOUTE::CLIENT_SML_HASH"
+        }
 
       }
       case msg: String if msg.startsWith("02:") => {
         //TPMDebugger.log("State [2] => received [" + msg.length() + "]: " + msg);
         val message = new TmqMessage(msg);
-        net.ra23.batman.ConnectionStorage.update(message.mac, message);
+        val isUpdated= net.ra23.batman.ConnectionStorage.update(message.mac, message)
+        if ( isUpdated && message.isFromClient){
+          DeviceWriterActor ! message.getResponseMessage()
+        } else if (isUpdated && ! message.isFromClient) {
+          DeviceWriterActor ! "03::c::CLIENT_MAC::CLIENT_ENCRYPTION_KEY"
+        }
       }
       case msg: String if msg.startsWith("03:") => {
         //TPMDebugger.log("State [3] => received [" + msg.length() + "]: " + msg);
         val message = new TmdMessage(msg);
-        net.ra23.batman.ConnectionStorage.update(message.mac, message);
+        val isUpdated= net.ra23.batman.ConnectionStorage.update(message.mac, message)
+        if ( isUpdated && message.isFromClient){
+          DeviceWriterActor ! message.getResponseMessage()
+        }
+//        else if (isUpdated && ! message.isFromClient) {
+//          DeviceWriterActor ! "01::c::FROM_CLIENT::CLIENTNONCE"
+//        }
       }
       case msg: String => {
         TPMDebugger.log("No protocol msg => " + msg)

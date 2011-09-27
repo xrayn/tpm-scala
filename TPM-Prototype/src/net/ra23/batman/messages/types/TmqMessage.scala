@@ -1,5 +1,13 @@
 package net.ra23.batman.messages.types
 
 case class TmqMessage(msg: String) extends BasicMessage(msg) {
-  payload = payload + ", "+ (if (content(3).endsWith("\n")) content(3).substring(0, content(3).length() - 1) else content(3))
+  val QUOTE = payload;
+  val SMLHASH = (if (content(4).endsWith("\n")) content(4).substring(0, content(4).length() - 1) else content(4))
+  
+  payload = payload + ", "+ SMLHASH
+
+  def getResponseMessage(): String = {
+    state+"::s::SERVER_MAC::SERVER_QUOTE::SERVER_SML_HASH"
+  }
+  
 }

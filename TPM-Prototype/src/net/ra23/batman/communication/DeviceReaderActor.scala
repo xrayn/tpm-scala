@@ -5,12 +5,12 @@ import scala.actors.Actor._
 import java.io._;
 import net.ra23.tpm.debugger._;
 
+
 object DeviceReaderActor extends Actor {
-  val file = "/tmp/testfifo"
   //val file = "/dev/mcom"
   val test = new Array[Byte](1000)
-
-  val device = new RandomAccessFile(file, "rw");
+  var file =""
+  var device:RandomAccessFile = null;
   def read(): String = {
     val len = device.read(test)
     val tmp = new Array[Byte](len)
@@ -18,10 +18,15 @@ object DeviceReaderActor extends Actor {
     new String(tmp);
   }
   def act = loop {
-    TPMDebugger.log("Starting char device reader");
+    TPMDebugger.log("Starting device reader @["+file+"]");
     loop {
       MsgDispatcher ! read()
     }
   }
   start()
+  
+  def setFile(filename: String) {
+    file=filename;
+    device = new RandomAccessFile(file, "rw");
+  }
 }

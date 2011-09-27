@@ -14,23 +14,17 @@ object ConnectionStorage {
   db += ("state2" -> state2)
   db += ("state1" -> state1)
 
-  //  def insert(mac: String, state: BasicMessage) {
-  //    for (entry <- db) {
-  //      if (entry._1 == mac) {
-  //        return
-  //      }
-  //    }
-  //    db += (mac -> state)
-  //  }
-  def update(mac: String, state: BasicMessage) {
+  def update(mac: String, state: BasicMessage): Boolean =  {
+    var result = false;
     state match {
-      case msg: TmcMessage if (!inDatabase(db("state1"), mac) && !inDatabase(db("state2"), mac) && !inDatabase(db("state3"), mac)) => db("state1") += (mac -> msg);
-      case msg: TmqMessage if (inDatabase(db("state1"), mac) && !inDatabase(db("state2"), mac) && !inDatabase(db("state3"), mac)) => db("state2") += (mac -> msg); db("state1") -= (mac)
-      case msg: TmdMessage if (!inDatabase(db("state1"), mac) && inDatabase(db("state2"), mac) && !inDatabase(db("state3"), mac)) => db("state3") += (mac -> msg); db("state2") -= (mac)
-      case msg: TmcMessage if (!inDatabase(db("state1"), mac) && !inDatabase(db("state2"), mac) && inDatabase(db("state3"), mac)) => db("state1") += (mac -> msg); db("state3") -= (mac);
-      case msg: BasicMessage => TPMDebugger.log("Dropping" + msg + " " + state,"debug");
-      case _ => TPMDebugger.log("Unknown message");
+      case msg: TmcMessage if (!inDatabase(db("state1"), mac) && !inDatabase(db("state2"), mac) && !inDatabase(db("state3"), mac)) => db("state1") += (mac -> msg);result=true;
+      case msg: TmqMessage if (inDatabase(db("state1"), mac) && !inDatabase(db("state2"), mac) && !inDatabase(db("state3"), mac)) => db("state2") += (mac -> msg); db("state1") -= (mac); result=true;
+      case msg: TmdMessage if (!inDatabase(db("state1"), mac) && inDatabase(db("state2"), mac) && !inDatabase(db("state3"), mac)) => db("state3") += (mac -> msg); db("state2") -= (mac); result=true;
+      case msg: TmcMessage if (!inDatabase(db("state1"), mac) && !inDatabase(db("state2"), mac) && inDatabase(db("state3"), mac)) => db("state1") += (mac -> msg); db("state3") -= (mac); result=true;
+      case msg: BasicMessage => TPMDebugger.log("Dropping" + msg + " " + state,"debug"); result=false;
+      case _ => TPMDebugger.log("Unknown message"); result=false;
     }
+    result;
   }
   override def toString() = {
     var res = "\n"

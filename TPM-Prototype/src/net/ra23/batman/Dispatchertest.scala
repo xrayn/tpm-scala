@@ -8,10 +8,13 @@ import net.ra23.tpm.debugger._;
 import net.ra23.batman.communication._;
 
 object Dispatchertest {
-  val file = DeviceReaderActor.file
-  val device = DeviceReaderActor.device
-  def main(args: Array[String]): Unit = {
 
+  val device = DeviceReaderActor.device
+
+  def main(args: Array[String]): Unit = {
+    DeviceReaderActor.setFile(args(1));
+    TPMDebugger.setFile(args(0))
+    DeviceWriterActor.setFiles(args.tail.tail.toList)
     TPMDebugger.log("Start")
     TPMDebugger.log("infile loaded");
     Thread.sleep(500)
@@ -32,8 +35,11 @@ object Dispatchertest {
             println(net.ra23.batman.Tabulator.format(net.ra23.batman.ConnectionStorage.asList("state3")))
           }
           case c: String if command.startsWith("inject") => {
-            val inject = c.replace("inject ", "").getBytes()
-            device.write(inject)
+            val inject = c.replace("inject ", "")
+            DeviceWriterActor ! inject 
+          }
+          case c: String if command == "t" => {
+            DeviceWriterActor ! "01::c::CLIENT_MAC::CLIENT_PARTIAL_DH_KEY"
           }
           case _ => println("error in command");
         }
