@@ -42,6 +42,8 @@ object TPMConfiguration {
     println("Writing default xml to file: " + filename)
     scala.xml.XML.saveFull(filename, default, "UTF-8", true, null);
   }
+  val random = new scala.util.Random();
+  val partialDHKey = scala.math.abs(random.nextLong());
   //println(fromXML(atest))
 
   //

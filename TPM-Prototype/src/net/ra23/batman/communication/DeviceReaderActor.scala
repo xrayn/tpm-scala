@@ -23,10 +23,9 @@ object DeviceReaderActor extends Actor {
       MsgDispatcher ! read()
     }
   }
-  start()
-  
-  def setFile(filename: String) {
+  def apply(filename: String) {
     file=filename;
     device = new RandomAccessFile(file, "rw");
+     start()
   }
 }

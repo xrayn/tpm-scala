@@ -10,7 +10,7 @@ object DeviceWriterActor extends Actor {
   var files = List[String]();
   //val file = "/dev/mcom"
   var devices = ListBuffer[RandomAccessFile]()
-  
+
   def write(value: String) = {
 
     for (device <- devices) {
@@ -19,22 +19,20 @@ object DeviceWriterActor extends Actor {
     }
   }
   def act = loop {
-
     TPMDebugger.log("Starting device writer @[" + files + "]");
     loop {
       react {
-        case msg: String =>  write(msg);
+        case msg: String => write(msg);
         case msg: Any => println(msg);
         case _ => println("error");
       }
     }
   }
-  start()
-
-  def setFiles(filenames: List[String]) {
+  def apply(filenames: List[String]) = {
     files = filenames;
     for (file <- files) {
-    devices.append(new  RandomAccessFile(file, "rw"))
-  }
+      devices.append(new RandomAccessFile(file, "rw"))
+    }
+    start()
   }
 }

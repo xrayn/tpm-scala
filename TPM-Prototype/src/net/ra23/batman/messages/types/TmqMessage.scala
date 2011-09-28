@@ -4,6 +4,9 @@ case class TmqMessage(msg: String) extends BasicMessage(msg) {
   val QUOTE = payload;
   val SMLHASH = (if (content(4).endsWith("\n")) content(4).substring(0, content(4).length() - 1) else content(4))
   
+  fields("quote") = QUOTE;
+  fields("smlhash") = SMLHASH;
+  
   payload = payload + ", "+ SMLHASH
 
   def getResponseMessage(): String = {
