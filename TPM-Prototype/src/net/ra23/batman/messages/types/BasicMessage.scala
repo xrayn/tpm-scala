@@ -5,6 +5,7 @@ import java.util.{ Date, Locale }
 import java.text.DateFormat
 import java.text.DateFormat._
 import net.ra23.tpm.config;
+import net.ra23.batman.communication._;
 
 abstract class BasicMessage(msg: String) {
   val fields = Map[String, Any]("state" -> "", "type" -> "", "mac" -> "")
@@ -34,5 +35,5 @@ abstract class BasicMessage(msg: String) {
     result = result.substring(0, result.length()-2) + " }"
     result
   }
-  def getResponseMessage(): String
+  def getResponseMessage(): Unicast
 }

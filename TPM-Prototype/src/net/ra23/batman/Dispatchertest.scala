@@ -13,9 +13,10 @@ object Dispatchertest {
   val device = DeviceReaderActor.device
 
   def main(args: Array[String]): Unit = {
-    DeviceReaderActor(args(1));
-    TPMDebugger.setFile(args(0))
-    DeviceWriterActor(args.tail.tail.toList)
+    TPMConfiguration.mac = args(0) 
+    DeviceReaderActor(args(2));
+    TPMDebugger.setFile(args(1))
+    DeviceWriterActor(args.tail.tail.tail.toList)
     TPMDebugger.log("Start")
     TPMDebugger.log("infile loaded");
     Thread.sleep(500)
@@ -23,6 +24,7 @@ object Dispatchertest {
     Thread.sleep(100);
     DeviceReaderActor ! "START"
     println(TPMConfiguration.partialDHKey.toString)
+    
     try {
       while (true) {
         val command = scala.Console.readLine("Type your command:");
@@ -45,7 +47,7 @@ object Dispatchertest {
           }
           case c: String if command == "t" => {
             val partialDHKey = scala.util.Random.nextLong();
-            DeviceWriterActor ! "01::c::CLIENT_MAC::"+TPMConfiguration.partialDHKey.toString
+            DeviceWriterActor ! Broadcast("01::c::"+TPMConfiguration.mac+"::"+TPMConfiguration.partialDHKey.toString)
           }
           case _ => println("error in command");
         }

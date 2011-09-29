@@ -7,6 +7,7 @@ import net.ra23.tpm.debugger._;
 import net.ra23.batman.messages.types._;
 import net.ra23.tpm._;
 import net.ra23.batman.messages.types.MessageFactory;
+import net.ra23.tpm.config._;
 
 object MsgDispatcher extends Actor {
   private def handleMessage(message: BasicMessage) {
@@ -15,14 +16,14 @@ object MsgDispatcher extends Actor {
         if (message.isFromClient) {
           DeviceWriterActor ! message.getResponseMessage()
         } else if (!message.isFromClient) {
-          DeviceWriterActor ! "02::c::CLIENT_MAC::CLIENT_QUOUTE::CLIENT_SML_HASH"
+          DeviceWriterActor ! Unicast("02::c::"+TPMConfiguration.mac+"::CLIENT_QUOUTE::CLIENT_SML_HASH",message.mac)
         }
       }
       case ms: TmqMessage => {
         if (message.isFromClient) {
           DeviceWriterActor ! message.getResponseMessage()
         } else if (!message.isFromClient) {
-          DeviceWriterActor ! "03::c::CLIENT_MAC::CLIENT_ENCRYPTION_KEY"
+          DeviceWriterActor ! Unicast("03::c::"+TPMConfiguration.mac+"::CLIENT_ENCRYPTION_KEY", message.mac)
         }
       }
       case ms: TmdMessage => {
@@ -54,10 +55,11 @@ object MsgDispatcher extends Actor {
       case msg: String =>
         {
           val message = MessageFactory(msg);
-          val isUpdated = net.ra23.batman.ConnectionStorage.update(message.mac, message)
-          if (isUpdated) {
-            handleMessage(MessageFactory(msg))
-          }
+
+            val isUpdated = net.ra23.batman.ConnectionStorage.update(message.mac, message)
+            if (isUpdated) {
+              handleMessage(MessageFactory(msg))
+            }
         };
       case _ => TPMDebugger.log("I have no idea what I just got.")
     }

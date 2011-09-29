@@ -19,6 +19,7 @@ object ConnectionStorage {
     var result = false;
     state match {
       case msg: TmcMessage if (!inDatabase(db("state1"), mac) && !inDatabase(db("state2"), mac) && !inDatabase(db("state3"), mac)) => db("state1") += (mac -> msg);keyDb(mac)=msg.partialDHKey; result=true;
+      case msg: TmcMessage if (inDatabase(db("state1"), mac) && !inDatabase(db("state2"), mac) && !inDatabase(db("state3"), mac)) => db("state1")(mac)=msg; keyDb(mac)=msg.partialDHKey; result=true; // here i do an update see action matrix
       case msg: TmcMessage if (!inDatabase(db("state1"), mac) && !inDatabase(db("state2"), mac) && inDatabase(db("state3"), mac)) => db("state1") += (mac -> msg); db("state3") -= (mac); keyDb(mac)=msg.partialDHKey; result=true;
       case msg: TmqMessage if (inDatabase(db("state1"), mac) && !inDatabase(db("state2"), mac) && !inDatabase(db("state3"), mac)) => db("state2") += (mac -> msg); db("state1") -= (mac); result=true;
       case msg: TmdMessage if (!inDatabase(db("state1"), mac) && inDatabase(db("state2"), mac) && !inDatabase(db("state3"), mac)) => db("state3") += (mac -> msg); db("state2") -= (mac); result=true;
