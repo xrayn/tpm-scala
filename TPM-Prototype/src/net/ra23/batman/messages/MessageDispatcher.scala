@@ -8,36 +8,52 @@ import net.ra23.batman.messages.types._;
 import net.ra23.tpm._;
 import net.ra23.batman.messages.types.MessageFactory;
 import net.ra23.tpm.config._;
+import net.ra23.batman.messages._;
 
 object MsgDispatcher extends Actor {
+  /**
+   * dispatch the message based on content
+   */
   private def handleMessage(message: BasicMessage) {
     message match {
-      case ms: TmcMessage => {
-        if (message.isFromClient) {
-          DeviceWriterActor ! message.getResponseMessage()
-        } else if (!message.isFromClient) {
-          DeviceWriterActor ! Unicast("02::c::"+TPMConfiguration.mac+"::CLIENT_QUOUTE::CLIENT_SML_HASH",message.mac)
+      case null => TPMDebugger.log(getClass().getSimpleName() + ": message was null!", "debug");
+      case msg: TmcMessage => {
+        if (msg.isFromClient) {
+          DeviceWriterActor ! TmcMessageHandler(msg).getFollowupMessageAsClient()
+        } else if (!msg.isFromClient) {
+          DeviceWriterActor ! TmcMessageHandler(msg).getFollowupMessageAsServer()
         }
       }
-      case ms: TmqMessage => {
-        if (message.isFromClient) {
-          DeviceWriterActor ! message.getResponseMessage()
-        } else if (!message.isFromClient) {
-          DeviceWriterActor ! Unicast("03::c::"+TPMConfiguration.mac+"::CLIENT_ENCRYPTION_KEY", message.mac)
+      case msg: TmqMessage => {
+        if (msg.isFromClient) {
+          DeviceWriterActor ! TmqMessageHandler(msg).getFollowupMessageAsClient()
+        } else if (!msg.isFromClient) {
+          DeviceWriterActor ! TmqMessageHandler(msg).getFollowupMessageAsServer()
         }
       }
-      case ms: TmdMessage => {
-        if (message.isFromClient) {
-          DeviceWriterActor ! message.getResponseMessage()
+      case msg: TmdMessage => {
+        if (msg.isFromClient) {
+          DeviceWriterActor ! TmdMessageHandler(msg).getFollowupMessageAsClient()
+        } else if (!msg.isFromClient) {
+          DeviceWriterActor ! TmdMessageHandler(msg).getFollowupMessageAsServer()
         }
       }
-      case _ =>
-        {
-          TPMDebugger.log("No protocol msg => " + message)
-        }
     }
   }
-
+  /**
+   * act as server instance
+   * verify the message and send response!
+   */
+  private def handleMessageFromClient(message: BasicMessage) {
+  
+  }
+  /**
+   * act as client (initiated first package)
+   * a protocol follow up message needs to be created!
+   */
+  private def handleMessageFromServer(message: BasicMessage) {
+   
+  }
   def act = loop {
     //TPMDebugger.log("myActor sleeps 1000");
     //Thread.sleep(1000)
@@ -54,12 +70,7 @@ object MsgDispatcher extends Actor {
     react {
       case msg: String =>
         {
-          val message = MessageFactory(msg);
-
-            val isUpdated = net.ra23.batman.ConnectionStorage.update(message.mac, message)
-            if (isUpdated) {
-              handleMessage(MessageFactory(msg))
-            }
+          handleMessage(MessageFactory(msg))
         };
       case _ => TPMDebugger.log("I have no idea what I just got.")
     }

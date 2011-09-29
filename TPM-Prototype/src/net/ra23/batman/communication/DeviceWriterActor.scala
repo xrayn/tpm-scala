@@ -13,15 +13,15 @@ object DeviceWriterActor extends Actor {
   //var devices = ListBuffer[RandomAccessFile]()
   var devices = Map[String, RandomAccessFile]();
   def lockFile(filename: String) {
-    new File(filename+".lock").createNewFile();
-    TPMDebugger.log("Locking file["+filename+"]", "debug");
+    new File(filename + ".lock").createNewFile();
+    TPMDebugger.log("Locking file[" + filename + "]", "debug");
   }
-  def unlockFile(filename: String){
-    new File(filename+".lock").delete()
-    TPMDebugger.log("Unlocking file["+filename+"]", "debug");
+  def unlockFile(filename: String) {
+    new File(filename + ".lock").delete()
+    TPMDebugger.log("Unlocking file[" + filename + "]", "debug");
   }
   def write(value: String, device: RandomAccessFile, filename: String) = {
-    while (new File(filename+".lock").exists()) {
+    while (new File(filename + ".lock").exists()) {
       Thread.sleep(500);
       TPMDebugger.log("waiting for file write access....", "debug");
     }
@@ -39,7 +39,7 @@ object DeviceWriterActor extends Actor {
     for (file <- files) {
       val MAC = message.mac.toUpperCase().split("_")
       val FILE = file.toUpperCase();
-      TPMDebugger.log(MAC(0) +" contains "+FILE, "debug")
+      TPMDebugger.log(MAC(0) + " contains " + FILE, "debug")
       if (FILE.contains(MAC(0))) {
         write(message.msg, devices(file), file)
       }
@@ -49,6 +49,12 @@ object DeviceWriterActor extends Actor {
     TPMDebugger.log("Starting device writer @[" + files + "]");
     loop {
       react {
+        case msg: Some[Unicast] => {
+          unicast(msg.get)
+        }
+        case msg: Option[Unicast] if (msg == None) => {
+          TPMDebugger.log(getClass().getSimpleName() + ": message was None so not sending message!", "debug");
+        }
         case msg: Unicast => {
           unicast(msg)
         }
