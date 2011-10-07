@@ -19,9 +19,13 @@ object MsgDispatcher extends Actor {
       case null => TPMDebugger.log(getClass().getSimpleName() + ": message was null!", "debug");
       case msg: TmcMessage => {
         if (msg.isFromClient) {
-          DeviceWriterActor ! TmcMessageHandler(msg).getFollowupMessageAsClient()
+          // there is no follow up!
+          //DeviceWriterActor !
+          TmcMessageHandler(msg) //.getFollowupMessageAsClient()
         } else if (!msg.isFromClient) {
-          DeviceWriterActor ! TmcMessageHandler(msg).getFollowupMessageAsServer()
+          // there is no follow up!
+          //DeviceWriterActor ! 
+          TmcMessageHandler(msg) //.getFollowupMessageAsServer()
         }
       }
       case msg: TmqMessage => {
@@ -45,14 +49,14 @@ object MsgDispatcher extends Actor {
    * verify the message and send response!
    */
   private def handleMessageFromClient(message: BasicMessage) {
-  
+
   }
   /**
    * act as client (initiated first package)
    * a protocol follow up message needs to be created!
    */
   private def handleMessageFromServer(message: BasicMessage) {
-   
+
   }
   def act = loop {
     //TPMDebugger.log("myActor sleeps 1000");

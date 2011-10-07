@@ -4,6 +4,9 @@ import scala.actors.Actor
 import scala.actors.Actor._
 import java.io._;
 import net.ra23.tpm.debugger._;
+import java.lang.ProcessBuilder;
+import scala.sys.process.Process
+
 
 object DeviceReaderActor extends Actor {
   //val file = "/dev/mcom"
@@ -43,9 +46,26 @@ object DeviceReaderActor extends Actor {
     }
   }
   def apply(filename: String) {
+	createListenerFile(filename);
     file = filename;
     device = new File(file);
     //device = new RandomAccessFile(file, "rw");
     start()
+  }
+  def createListenerFile(filename: String) {
+    if (new File(filename).exists()) {
+      TPMDebugger.log(getClass().getSimpleName() + ": removing " +filename+ "", "debug");
+      val pb = Process("""rm -f """+filename)
+      pb.!
+    }
+    if (new File(filename+".lock").exists()) {
+      TPMDebugger.log(getClass().getSimpleName() + ": removing " +filename+".lock", "debug");
+      val pb = Process("""rm -f """+filename+".lock")
+      //val pb = new ProcessBuilder("rm", "-f", );
+      pb.!
+    }
+    TPMDebugger.log(getClass().getSimpleName() + ": creating new " +filename+"", "debug");
+    val pb = new ProcessBuilder("mkfifo", filename);
+    pb.start();
   }
 }

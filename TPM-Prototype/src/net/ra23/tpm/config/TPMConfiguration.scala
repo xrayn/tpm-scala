@@ -43,7 +43,7 @@ object TPMConfiguration {
     scala.xml.XML.saveFull(filename, default, "UTF-8", true, null);
   }
   val random = new scala.util.Random();
-  val partialDHKey = scala.math.abs(random.nextLong());
+  var partialDHKey = scala.math.abs(random.nextLong());
   var mac="";
   //println(fromXML(atest))
 
