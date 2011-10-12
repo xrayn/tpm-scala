@@ -4,16 +4,17 @@ import scala.actors.Actor
 import scala.actors.Actor._
 import java.io._;
 import net.ra23.tpm.debugger._;
+import net.ra23.batman.communication._;
 import java.lang.ProcessBuilder;
 import scala.sys.process.Process
 
 
 object DeviceReaderActor extends Actor {
   //val file = "/dev/mcom"
+  
   val test = new Array[Byte](1000)
   var file = ""
-
-  var device: File = null;
+  var device: RandomAccessFile = null;
   def lockFile() {
     new File(file + ".lock").createNewFile();
     TPMDebugger.log("DeviceReader: Locking file[" + file + "]", "debug");
@@ -25,17 +26,19 @@ object DeviceReaderActor extends Actor {
 
   def read(): String = {
     var result = ""
-    val fiS = new FileInputStream(file)
-    while (fiS.available() == 0) {
-      Thread.sleep(10)
-      
-      //TPMDebugger.log("no data sleeping ... ", "debug");
-    }
-    val len = fiS.read(test)
+    //val fiS = new FileInputStream(file)
+    
+//    while (fiS.available() == 0) {
+//      Thread.sleep(10)
+//      
+//      TPMDebugger.log("no data sleeping ... ", "debug");
+//    }
+    val len = device.read(test)
     unlockFile()
     val tmp = new Array[Byte](len)
     test.copyToArray(tmp)
     result = new String(tmp);
+    // tmp fix for reading from chardevice!
     TPMDebugger.log("reading " + file + "[" + result + "]", "debug");
     result
   }
@@ -46,10 +49,9 @@ object DeviceReaderActor extends Actor {
     }
   }
   def apply(filename: String) {
-	createListenerFile(filename);
+	//createListenerFile(filename);
     file = filename;
-    device = new File(file);
-    //device = new RandomAccessFile(file, "rw");
+    device =new RandomAccessFile(filename, "rw");
     start()
   }
   def createListenerFile(filename: String) {

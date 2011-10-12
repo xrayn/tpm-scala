@@ -21,5 +21,6 @@
 	<classpathentry kind="lib" path="ext-libs/mail.jar"/>
 	<classpathentry kind="lib" path="ext-libs/saaj.jar"/>
 	<classpathentry kind="lib" path="ext-libs/wsdl4j-1.5.1.jar"/>
+	<classpathentry kind="lib" path="/home/ar/Downloads/scala-2.9.1.final/lib/scala-compiler.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -30,7 +30,7 @@ object Dispatchertest {
 
     try {
       // start automatically to broadcast!
-      BroadcastActor ! "start"
+      //BroadcastActor ! "start"
       while (true) {
         consoleHelp
         val command = scala.Console.readLine("Type your command:");
@@ -67,18 +67,19 @@ object Dispatchertest {
             val value = scala.math.abs(random.nextLong());
             TPMConfiguration.partialDHKey = value
             println("[Changing DH Partial Key ......] " + value)
+            DeviceWriterActor ! "00::init_dh_key::"+TPMConfiguration.partialDHKey
             //BroadcastActor ! "restart"
           }
           case c: String if command == "h" => {
             consoleHelp
           }
           case c: String if command == "q" => {
-            println("removing ["+in+"]")
-            val pb = Process("""rm -f """+in)
-            pb.!
-            println("removing ["+in+".lock]")
-            val pb2 = Process("""rm -f """+in+".lock")
-            pb2.!
+//            println("removing ["+in+"]")
+//            val pb = Process("""rm -f """+in)
+//            pb.!
+//            println("removing ["+in+".lock]")
+//            val pb2 = Process("""rm -f """+in+".lock")
+//            pb2.!
             println("Exiting....")
             System.exit(0);
           }

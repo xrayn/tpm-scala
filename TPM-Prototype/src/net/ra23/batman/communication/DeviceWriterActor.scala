@@ -28,9 +28,9 @@ object DeviceWriterActor extends Actor {
         Thread.sleep(500);
         TPMDebugger.log("waiting for file write access....", "debug");
       }
-      lockFile(filename);
-      myDevice.write(value.getBytes())
-      myDevice.write("\n".getBytes())
+      // disabled for char device lockFile(filename);
+      val myValue= value + "\n"
+      myDevice.write(myValue.getBytes())
       myDevice.close
       TPMDebugger.log("writing to " + filename + "[" + value + "]", "debug");
     } else {
@@ -53,6 +53,12 @@ object DeviceWriterActor extends Actor {
       }
     }
   }
+  def writePlain(message: String) = {
+    TPMDebugger.log(files, "debug");
+    for (file <- files) {
+        write(message, file)
+    }
+  }
   def act = loop {
     react {
       case msg: Some[Unicast] => {
@@ -65,7 +71,7 @@ object DeviceWriterActor extends Actor {
         unicast(msg)
       }
       case msg: Broadcast => broadcast(msg.msg)
-      case msg: String => TPMDebugger.log(msg, "debug")
+      case msg: String => writePlain(msg)
       case _ => println("error");
     }
 
