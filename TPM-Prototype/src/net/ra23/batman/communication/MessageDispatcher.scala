@@ -30,15 +30,19 @@ object MsgDispatcher extends Actor {
       }
       case msg: TmqMessage => {
         if (msg.isFromClient) {
+          Thread.sleep(500);
           DeviceWriterActor ! TmqMessageHandler(msg).getFollowupMessageAsClient()
         } else if (!msg.isFromClient) {
+          Thread.sleep(500);
           DeviceWriterActor ! TmqMessageHandler(msg).getFollowupMessageAsServer()
         }
       }
       case msg: TmdMessage => {
         if (msg.isFromClient) {
+          Thread.sleep(500);
           DeviceWriterActor ! TmdMessageHandler(msg).getFollowupMessageAsClient()
         } else if (!msg.isFromClient) {
+          Thread.sleep(500);
           DeviceWriterActor ! TmdMessageHandler(msg).getFollowupMessageAsServer()
         }
       }

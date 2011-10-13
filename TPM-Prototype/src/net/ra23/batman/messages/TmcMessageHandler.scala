@@ -12,6 +12,6 @@ def handle(): Boolean = {
   }
   
   def getFollowupMessageAsServer(): Option[Unicast] = {
-    Some(Unicast("02::c::" + TPMConfiguration.mac + "::CLIENT_QUOUTE::CLIENT_SML_HASH", message.mac))
+    Some(Unicast("02::"+message.mac+"::02::c::" + TPMConfiguration.mac + "::CLIENT_QUOUTE::CLIENT_SML_HASH"))
   } 
 }

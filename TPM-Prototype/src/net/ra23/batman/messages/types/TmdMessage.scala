@@ -6,6 +6,6 @@ case class TmdMessage(msg: String) extends BasicMessage(msg) {
 	val encryptionKey=payload;
 	fields("encryptionKey") = encryptionKey;
 	def getResponseMessage(): Unicast = {
-    Unicast(state+"::s::"+TPMConfiguration.mac+"::SERVER_ENCRYPTION_KEY", mac)
+    Unicast(state+"::"++mac+"::"+state+"::s::"+TPMConfiguration.mac+"::SERVER_ENCRYPTION_KEY")
   }
 }

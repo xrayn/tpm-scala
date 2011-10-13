@@ -1,5 +1,5 @@
 package net.ra23.batman.communication
 
-case class Unicast(msg: String, mac: String) {
+case class Unicast(msg: String) {
 
 }

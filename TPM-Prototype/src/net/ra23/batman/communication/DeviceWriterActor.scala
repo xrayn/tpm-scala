@@ -9,10 +9,10 @@ import net.ra23.batman.messages.types._;
 
 object DeviceWriterActor extends Actor {
   var files = List[String]();
-  def lockFile(filename: String) {
-    new File(filename + ".lock").createNewFile();
-    TPMDebugger.log("Locking file[" + filename + "]", "debug");
-  }
+//  def lockFile(filename: String) {
+//    new File(filename + ".lock").createNewFile();
+//    TPMDebugger.log("Locking file[" + filename + "]", "debug");
+//  }
   def unlockFile(filename: String) {
     new File(filename + ".lock").delete()
     TPMDebugger.log("Unlocking file[" + filename + "]", "debug");
@@ -29,7 +29,7 @@ object DeviceWriterActor extends Actor {
         TPMDebugger.log("waiting for file write access....", "debug");
       }
       // disabled for char device lockFile(filename);
-      val myValue= value + "\n"
+      val myValue = value + "\n"
       myDevice.write(myValue.getBytes())
       myDevice.close
       TPMDebugger.log("writing to " + filename + "[" + value + "]", "debug");
@@ -38,25 +38,20 @@ object DeviceWriterActor extends Actor {
     }
   }
   def broadcast(value: String) = {
-    for (file <- files ) {
-       write(value,  file)
+    for (file <- files) {
+      write(value, file)
     }
   }
   def unicast(message: Unicast) = {
-    TPMDebugger.log(files, "debug");
     for (file <- files) {
-      val MAC = message.mac.toUpperCase().split("_")
-      val FILE = file.toUpperCase();
-      TPMDebugger.log(MAC(0) + " contains " + FILE, "debug")
-      if (FILE.contains(MAC(0))) {
-        write(message.msg, file)
-      }
+      TPMDebugger.log(files, "debug");
+      write(message.msg, file)
     }
   }
   def writePlain(message: String) = {
     TPMDebugger.log(files, "debug");
     for (file <- files) {
-        write(message, file)
+      write(message, file)
     }
   }
   def act = loop {

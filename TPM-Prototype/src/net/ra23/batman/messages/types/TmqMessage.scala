@@ -13,7 +13,7 @@ case class TmqMessage(msg: String) extends BasicMessage(msg) {
   payload = payload + ", "+ SMLHASH
 
   def getResponseMessage(): Unicast = {
-    Unicast(state+"::s::"+TPMConfiguration.mac+"::SERVER_QUOTE::SERVER_SML_HASH", mac)
+    Unicast(state+"::"+mac+"::"+state+"::s::"+TPMConfiguration.mac+"::SERVER_QUOTE::SERVER_SML_HASH")
   }
   
 }

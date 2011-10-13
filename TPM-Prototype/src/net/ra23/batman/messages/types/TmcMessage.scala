@@ -5,6 +5,6 @@ case class TmcMessage(msg: String) extends BasicMessage(msg) {
   val partialDHKey = payload;
   fields("partialDHKey") = partialDHKey;
   def getResponseMessage(): Unicast = {
-    Unicast(state+"::s::"+TPMConfiguration.mac+"::"+TPMConfiguration.partialDHKey.toString, mac)
+    Unicast(state+"::"+mac+"::"+state+"::s::"+TPMConfiguration.mac+"::"+TPMConfiguration.partialDHKey.toString)
   }
 }

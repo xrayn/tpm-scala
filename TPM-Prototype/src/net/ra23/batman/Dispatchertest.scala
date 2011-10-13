@@ -54,7 +54,7 @@ object Dispatchertest {
           case c: String if command == "t" => {
             println("[Testing tmq & tmd ......]")
             for ((mac, partialDhKey) <- net.ra23.batman.ConnectionStorage.keyDb) {
-              DeviceWriterActor ! Some(Unicast("02::c::" + TPMConfiguration.mac + "::CLIENT_QUOUTE::CLIENT_SML_HASH", mac))
+              DeviceWriterActor ! Some(Unicast("02::"+mac+"::02::c::" + TPMConfiguration.mac + "::CLIENT_QUOUTE::CLIENT_SML_HASH"))
             }
           }
           case c: String if command == "b" => {

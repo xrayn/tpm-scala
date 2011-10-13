@@ -34,7 +34,7 @@ object DeviceReaderActor extends Actor {
 //      TPMDebugger.log("no data sleeping ... ", "debug");
 //    }
     val len = device.read(test)
-    unlockFile()
+    //unlockFile()
     val tmp = new Array[Byte](len)
     test.copyToArray(tmp)
     result = new String(tmp);
