@@ -24,10 +24,6 @@ object DeviceWriterActor extends Actor {
   def write(value: String, filename: String) = {
     if (new File(filename).exists()) {
       val myDevice = new RandomAccessFile(filename, "rw");
-      while (new File(filename + ".lock").exists()) {
-        Thread.sleep(500);
-        TPMDebugger.log("waiting for file write access....", "debug");
-      }
       // disabled for char device lockFile(filename);
       val myValue = value + "\n"
       myDevice.write(myValue.getBytes())

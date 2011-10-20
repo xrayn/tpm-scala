@@ -33,6 +33,7 @@ object DeviceReaderActor extends Actor {
 //      
 //      TPMDebugger.log("no data sleeping ... ", "debug");
 //    }
+    device =new RandomAccessFile(file, "rw");
     val len = device.read(test)
     //unlockFile()
     val tmp = new Array[Byte](len)
@@ -40,6 +41,7 @@ object DeviceReaderActor extends Actor {
     result = new String(tmp);
     // tmp fix for reading from chardevice!
     TPMDebugger.log("reading " + file + "[" + result + "]", "debug");
+    device.close()
     result
   }
   def act = loop {
@@ -51,7 +53,6 @@ object DeviceReaderActor extends Actor {
   def apply(filename: String) {
 	//createListenerFile(filename);
     file = filename;
-    device =new RandomAccessFile(filename, "rw");
     start()
   }
   def createListenerFile(filename: String) {
