@@ -7,13 +7,16 @@ import java.io._;
 import net.ra23.tpm.debugger._;
 import net.ra23.batman.communication._;
 import net.ra23.tpm.config._;
-import scala.sys.process.Process
+import scala.sys.process.Process;
+import net.ra23.batman.measurement._;
 
 object Dispatchertest {
 
   val device = DeviceReaderActor.device
 
   def main(args: Array[String]): Unit = {
+    MessageMeasurer.setFile("/tmp/measurement.log")
+    MessageMeasurer.measure(null,"startup");
     TPMDebugger.setFile(args(1))
     TPMDebugger.log("Start")
     TPMConfiguration.mac = args(0)

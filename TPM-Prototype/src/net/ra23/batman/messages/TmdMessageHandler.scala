@@ -7,6 +7,7 @@ import net.ra23.batman.communication._;
 
 case class TmdMessageHandler(message: TmdMessage) extends BasicMessageHandler(message) {
   def handle(): Boolean = {
+    isHandled=true;
     true
   }
   def getFollowupMessageAsServer(): Option[Unicast] = {

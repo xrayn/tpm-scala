@@ -2,49 +2,45 @@ package net.ra23.batman.communication
 
 import scala.actors.Actor
 import scala.actors.Actor._
-
+import java.util.Date;
 import net.ra23.tpm.debugger._;
 import net.ra23.batman.messages.types._;
 import net.ra23.tpm._;
 import net.ra23.batman.messages.types.MessageFactory;
 import net.ra23.tpm.config._;
 import net.ra23.batman.messages._;
+import net.ra23.batman.measurement._;
 
 object MsgDispatcher extends Actor {
   /**
    * dispatch the message based on content
    */
+  var messageHandler: BasicMessageHandler = null;
   private def handleMessage(message: BasicMessage) {
+    val date = new Date();
     message match {
       case null => TPMDebugger.log(getClass().getSimpleName() + ": message was null!", "debug");
       case msg: TmcMessage => {
-        if (msg.isFromClient) {
           // there is no follow up!
           //DeviceWriterActor !
-          TmcMessageHandler(msg) //.getFollowupMessageAsClient()
-        } else if (!msg.isFromClient) {
-          // there is no follow up!
-          //DeviceWriterActor ! 
-          TmcMessageHandler(msg) //.getFollowupMessageAsServer()
-        }
+          messageHandler = TmcMessageHandler(msg) //.getFollowupMessageAsClient()
       }
       case msg: TmqMessage => {
         if (msg.isFromClient) {
-          Thread.sleep(500);
           DeviceWriterActor ! TmqMessageHandler(msg).getFollowupMessageAsClient()
         } else if (!msg.isFromClient) {
-          Thread.sleep(500);
           DeviceWriterActor ! TmqMessageHandler(msg).getFollowupMessageAsServer()
         }
       }
       case msg: TmdMessage => {
         if (msg.isFromClient) {
-          Thread.sleep(500);
           DeviceWriterActor ! TmdMessageHandler(msg).getFollowupMessageAsClient()
         } else if (!msg.isFromClient) {
-          Thread.sleep(500);
           DeviceWriterActor ! TmdMessageHandler(msg).getFollowupMessageAsServer()
         }
+      }
+      if (messageHandler.isHandled == true) {
+        
       }
     }
   }
