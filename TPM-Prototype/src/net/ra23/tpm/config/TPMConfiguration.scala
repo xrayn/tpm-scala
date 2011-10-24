@@ -45,6 +45,7 @@ object TPMConfiguration {
   val random = new scala.util.Random();
   var partialDHKey = scala.math.abs(random.nextLong());
   var mac="";
+  var aesKey=""
   //println(fromXML(atest))
 
   //

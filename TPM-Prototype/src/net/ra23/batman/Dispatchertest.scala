@@ -16,7 +16,7 @@ object Dispatchertest {
 
   def main(args: Array[String]): Unit = {
     MessageMeasurer.setFile("/tmp/measurement.log")
-    MessageMeasurer.measure(null,"startup");
+    MessageMeasurer.measure(null, "startup");
     TPMDebugger.setFile(args(1))
     TPMDebugger.log("Start")
     TPMConfiguration.mac = args(0)
@@ -34,6 +34,22 @@ object Dispatchertest {
     try {
       // start automatically to broadcast!
       //BroadcastActor ! "start"
+
+      /*
+    	 * first of all init the kernel module!
+    	 */
+      val random = new scala.util.Random();
+      val dhKey = scala.math.abs(random.nextLong());
+      //           1234567890123456   <- is 16 Byte char array!
+      val aesKey = "AES_KEY000000000" //scala.math.abs(random.nextLong()).toString.substring(0,16);
+      //change this later to dynamic data
+      TPMConfiguration.partialDHKey = dhKey
+      TPMConfiguration.aesKey = aesKey
+      println("[Init DH Partial Key ......] " + TPMConfiguration.partialDHKey)
+      DeviceWriterActor ! "00::init_dh_key::" + TPMConfiguration.partialDHKey
+      println("[INIT AES Key        ......] " + TPMConfiguration.aesKey)
+      DeviceWriterActor ! "00::init_aes_key::" + TPMConfiguration.aesKey;
+
       while (true) {
         consoleHelp
         val command = scala.Console.readLine("Type your command:");
@@ -57,7 +73,7 @@ object Dispatchertest {
           case c: String if command == "t" => {
             println("[Testing tmq & tmd ......]")
             for ((mac, partialDhKey) <- net.ra23.batman.ConnectionStorage.keyDb) {
-              DeviceWriterActor ! Some(Unicast("02::"+mac+"::02::c::" + TPMConfiguration.mac + "::CLIENT_QUOUTE::CLIENT_SML_HASH"))
+              DeviceWriterActor ! Some(Unicast("02::" + mac + "::02::c::" + TPMConfiguration.mac + "::CLIENT_QUOUTE::CLIENT_SML_HASH"))
             }
           }
           case c: String if command == "b" => {
@@ -66,23 +82,45 @@ object Dispatchertest {
           }
           case c: String if command == "c" => {
 
+            //            val random = new scala.util.Random();
+            //            val dhKey = scala.math.abs(random.nextLong());
+            //            //           1234567890123456   <- is 16 Byte char array!
+            //            val aesKey= "AES_KEY000000000"//scala.math.abs(random.nextLong()).toString.substring(0,16);
+            //              //change this later to dynamic data
+            //            TPMConfiguration.partialDHKey = dhKey
+            //            TPMConfiguration.aesKey=aesKey
+            //            println("[Changing DH Partial Key ......] " + TPMConfiguration.partialDHKey)
+            //            DeviceWriterActor ! "00::init_dh_key::"+TPMConfiguration.partialDHKey
+            //            println("[Changing AES Key        ......] " + TPMConfiguration.aesKey)
+            //            DeviceWriterActor ! "00::init_aes_key::"+TPMConfiguration.aesKey;
+            //BroadcastActor ! "restart" inject 00::init_aes_key::0XDEADBEEFDEAD12
+          }
+          case c: String if command == "s" => {
             val random = new scala.util.Random();
-            val value = scala.math.abs(random.nextLong());
-            TPMConfiguration.partialDHKey = value
-            println("[Changing DH Partial Key ......] " + value)
-            DeviceWriterActor ! "00::init_dh_key::"+TPMConfiguration.partialDHKey
-            //BroadcastActor ! "restart"
+            val dhKey = scala.math.abs(random.nextLong());
+            //           1234567890123456   <- is 16 Byte char array!
+            val aesKey = "AES_KEY000000000" //scala.math.abs(random.nextLong()).toString.substring(0,16);
+            //change this later to dynamic data
+            TPMConfiguration.partialDHKey = dhKey
+            TPMConfiguration.aesKey = aesKey
+            println("[Changing DH Partial Key ......] " + TPMConfiguration.partialDHKey)
+            DeviceWriterActor ! "00::init_dh_key::" + TPMConfiguration.partialDHKey
+            println("[Changing AES Key        ......] " + TPMConfiguration.aesKey)
+            DeviceWriterActor ! "00::init_aes_key::" + TPMConfiguration.aesKey;
+            for ((mac, partialDhKey) <- net.ra23.batman.ConnectionStorage.keyDb) {
+              DeviceWriterActor ! Some(Unicast("02::" + mac + "::02::c::" + TPMConfiguration.mac + "::CLIENT_QUOUTE::CLIENT_SML_HASH"))
+            }
           }
           case c: String if command == "h" => {
             consoleHelp
           }
           case c: String if command == "q" => {
-//            println("removing ["+in+"]")
-//            val pb = Process("""rm -f """+in)
-//            pb.!
-//            println("removing ["+in+".lock]")
-//            val pb2 = Process("""rm -f """+in+".lock")
-//            pb2.!
+            //            println("removing ["+in+"]")
+            //            val pb = Process("""rm -f """+in)
+            //            pb.!
+            //            println("removing ["+in+".lock]")
+            //            val pb2 = Process("""rm -f """+in+".lock")
+            //            pb2.!
             println("Exiting....")
             System.exit(0);
           }
@@ -101,8 +139,9 @@ object Dispatchertest {
     println("Command Overview:")
     println("[h] -> print this help")
     println("[b] -> start broadcast")
-    println("[c] -> change dh key")
+    println("[c] -> change dh key + aes key")
     println("[t] -> inject a tmq package (start protocol)")
     println("[p] -> show current state tables and keydb")
+    println("[s] -> inject aes + payload and start protocol with tmq")
   }
 }

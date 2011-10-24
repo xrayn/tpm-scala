@@ -11,6 +11,6 @@ case class TmqMessageHandler(message: TmqMessage) extends BasicMessageHandler(me
     true
   }
   def getFollowupMessageAsServer(): Option[Unicast] = {
-    Some(Unicast("03::"+message.mac+"::03::c::" + TPMConfiguration.mac + "::CLIENT_ENCRYPTION_KEY"))
+    Some(Unicast("03::"+message.mac+"::03::c::" + TPMConfiguration.mac + "::"+TPMConfiguration.aesKey))
   }
 }

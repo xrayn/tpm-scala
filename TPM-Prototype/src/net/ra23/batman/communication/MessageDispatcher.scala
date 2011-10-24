@@ -38,6 +38,8 @@ object MsgDispatcher extends Actor {
         } else if (!msg.isFromClient) {
           DeviceWriterActor ! TmdMessageHandler(msg).getFollowupMessageAsServer()
         }
+        // inject the received aes key!
+        DeviceWriterActor ! "00::insert_aes_key::"+msg.mac+"::"+msg.payload
       }
       if (messageHandler.isHandled == true) {
         

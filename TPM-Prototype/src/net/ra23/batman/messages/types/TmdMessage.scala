@@ -7,6 +7,6 @@ case class TmdMessage(msg: String) extends BasicMessage(msg) {
 	
 	fields("encryptionKey") = encryptionKey;
 	def getResponseMessage(): Unicast = {
-    Unicast(state+"::"++mac+"::"+state+"::s::"+TPMConfiguration.mac+"::SERVER_ENCRYPTION_KEY")
+    Unicast(state+"::"++mac+"::"+state+"::s::"+TPMConfiguration.mac+"::"+TPMConfiguration.aesKey)
   }
 }

@@ -40,6 +40,7 @@ object ConnectionStorage {
         }
       }
       case msg: TmqMessage if (inDatabase(db("state1"), mac) && !inDatabase(db("state2"), mac) && !inDatabase(db("state3"), mac)) => db("state2") += (mac -> msg); db("state1") -= (mac); result = true;
+      case msg: TmqMessage if (!inDatabase(db("state1"), mac) && inDatabase(db("state2"), mac) && !inDatabase(db("state3"), mac)) => db("state2") -= (mac); db("state2") += (mac -> msg);  result = true; //refresh
       case msg: TmdMessage if (!inDatabase(db("state1"), mac) && inDatabase(db("state2"), mac) && !inDatabase(db("state3"), mac)) => db("state3") += (mac -> msg); db("state2") -= (mac); result = true;
       case msg: BasicMessage => TPMDebugger.log("Dropping" + msg + " " + state + inDatabase(db("state1"), mac).toString() + inDatabase(db("state2"), mac).toString() + inDatabase(db("state3"), mac).toString(), "debug"); result = false;
       case _ => TPMDebugger.log("Unknown message"); result = false;
