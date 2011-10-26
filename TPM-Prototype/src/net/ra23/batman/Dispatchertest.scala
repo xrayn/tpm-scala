@@ -41,7 +41,7 @@ object Dispatchertest {
       val random = new scala.util.Random();
       val dhKey = scala.math.abs(random.nextLong());
       //           1234567890123456   <- is 16 Byte char array!
-      val aesKey = "AES_KEY000000000" //scala.math.abs(random.nextLong()).toString.substring(0,16);
+      val aesKey = "AES_KEY" + scala.math.abs(random.nextLong()).toString.substring(0, 9);
       //change this later to dynamic data
       TPMConfiguration.partialDHKey = dhKey
       TPMConfiguration.aesKey = aesKey
@@ -82,18 +82,16 @@ object Dispatchertest {
           }
           case c: String if command == "c" => {
 
-            //            val random = new scala.util.Random();
-            //            val dhKey = scala.math.abs(random.nextLong());
-            //            //           1234567890123456   <- is 16 Byte char array!
-            //            val aesKey= "AES_KEY000000000"//scala.math.abs(random.nextLong()).toString.substring(0,16);
-            //              //change this later to dynamic data
-            //            TPMConfiguration.partialDHKey = dhKey
-            //            TPMConfiguration.aesKey=aesKey
-            //            println("[Changing DH Partial Key ......] " + TPMConfiguration.partialDHKey)
-            //            DeviceWriterActor ! "00::init_dh_key::"+TPMConfiguration.partialDHKey
-            //            println("[Changing AES Key        ......] " + TPMConfiguration.aesKey)
-            //            DeviceWriterActor ! "00::init_aes_key::"+TPMConfiguration.aesKey;
-            //BroadcastActor ! "restart" inject 00::init_aes_key::0XDEADBEEFDEAD12
+            val dhKey = scala.math.abs(random.nextLong());
+            //           1234567890123456   <- is 16 Byte char array!
+            val aesKey = "AES_KEY" + scala.math.abs(random.nextLong()).toString.substring(0, 9);
+            //change this later to dynamic data
+            TPMConfiguration.partialDHKey = dhKey
+            TPMConfiguration.aesKey = aesKey
+            println("[CHANGE DH Partial Key ......] " + TPMConfiguration.partialDHKey)
+            DeviceWriterActor ! "00::init_dh_key::" + TPMConfiguration.partialDHKey
+            println("[CHANGE AES Key        ......] " + TPMConfiguration.aesKey)
+            DeviceWriterActor ! "00::init_aes_key::" + TPMConfiguration.aesKey;
           }
           case c: String if command == "s" => {
             val random = new scala.util.Random();
