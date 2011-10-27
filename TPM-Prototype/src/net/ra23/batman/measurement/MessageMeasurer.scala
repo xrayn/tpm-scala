@@ -11,18 +11,22 @@ object MessageMeasurer {
   Logger.setLevel(org.apache.log4j.Level.ALL)
   Logger.removeAllAppenders();
   Logger.info("Measurement enabled.");
-
-  def measure(message: Any, level: String = "") {
-    val date = new Date;
+  var start = 0L
+  def measure(message: Any, level: String = "", as: String = "") {
+    //val date = new Date;
     level match {
       case "startup" => {
-        Logger.debug("STARTTIME,"+date.getTime().toString());
+        start=System.nanoTime();
+        Logger.debug("STARTTIME,"+start.toString());
       }
       case "start" => {
-        Logger.debug(message+",START,"+date.getTime().toString());
+        start=System.nanoTime();
+        Logger.debug(message+",START,"+start.toString()+",0,"+as.toUpperCase());
       }
       case "end" => {
-        Logger.debug(message+",END,"+date.getTime().toString());
+        val end=System.nanoTime();
+        Logger.debug(message+",END,"+end.toString()+","+((end-start)/1000)+","+as.toUpperCase());
+        start=0L
       }
       case _ => Logger.info(message)
     }

@@ -10,6 +10,7 @@ import net.ra23.batman.messages.types.MessageFactory;
 import net.ra23.tpm.config._;
 import net.ra23.batman.messages._;
 import net.ra23.batman.measurement._;
+import net.ra23.batman.encyrption._;
 
 object MsgDispatcher extends Actor {
   /**
@@ -23,23 +24,23 @@ object MsgDispatcher extends Actor {
       case msg: TmcMessage => {
           // there is no follow up!
           //DeviceWriterActor !
-          messageHandler = TmcMessageHandler(msg) //.getFollowupMessageAsClient()
+          messageHandler = TmcMessageHandler(msg, "broadcast") //.getFollowupMessageAsClient()
       }
       case msg: TmqMessage => {
         if (msg.isFromClient) {
-          DeviceWriterActor ! TmqMessageHandler(msg).getFollowupMessageAsClient()
+          DeviceWriterActor ! TmqMessageHandler(msg, "server").getFollowupMessageAsClient()
         } else if (!msg.isFromClient) {
-          DeviceWriterActor ! TmqMessageHandler(msg).getFollowupMessageAsServer()
+          DeviceWriterActor ! TmqMessageHandler(msg, "client").getFollowupMessageAsServer()
         }
       }
       case msg: TmdMessage => {
         if (msg.isFromClient) {
-          DeviceWriterActor ! TmdMessageHandler(msg).getFollowupMessageAsClient()
+          DeviceWriterActor ! TmdMessageHandler(msg, "server").getFollowupMessageAsClient()
         } else if (!msg.isFromClient) {
-          DeviceWriterActor ! TmdMessageHandler(msg).getFollowupMessageAsServer()
+          DeviceWriterActor ! TmdMessageHandler(msg, "client").getFollowupMessageAsServer()
         }
         // inject the received aes key!
-        DeviceWriterActor ! "00::insert_aes_key::"+msg.mac+"::"+msg.payload
+        DeviceWriterActor ! "00::insert_aes_key::"+msg.mac+"::"+DiffieHellmanKeyExchange.getAesKeyFromPayload(msg.payload)
       }
       if (messageHandler.isHandled == true) {
         

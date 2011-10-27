@@ -6,11 +6,12 @@ import net.ra23.tpm._;
 import net.ra23.tpm.config._;
 import net.ra23.batman.communication._;
 
-abstract class BasicMessageHandler(message: BasicMessage) {
+abstract class BasicMessageHandler(message: BasicMessage, as: String) {
   var isHandled = false;
   var isValid = true
+  var encryptedAesKey = "";
   _start();
-  
+
   def _start() = {
     startMeasurement()
     insertIntoConnectionStorage()
@@ -18,11 +19,11 @@ abstract class BasicMessageHandler(message: BasicMessage) {
     endMeasurement()
   }
   def handle(): Boolean
-  def startMeasurement() ={
-    MessageMeasurer.measure(message.mac+","+getClass().getSimpleName().toUpperCase(), "start");
+  def startMeasurement() = {
+    MessageMeasurer.measure(message.mac + "," + getClass().getSimpleName().toUpperCase(), "start", as);
   }
-  def endMeasurement() ={
-    MessageMeasurer.measure(message.mac+","+getClass().getSimpleName().toUpperCase(), "end");
+  def endMeasurement() = {
+    MessageMeasurer.measure(message.mac + "," + getClass().getSimpleName().toUpperCase(), "end", as);
   }
   def insertIntoConnectionStorage() {
     if (isValid) {

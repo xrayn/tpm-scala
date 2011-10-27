@@ -9,12 +9,13 @@ import net.ra23.batman.communication._;
 import net.ra23.tpm.config._;
 import scala.sys.process.Process;
 import net.ra23.batman.measurement._;
+import net.ra23.batman.encyrption._;
 
 object Dispatchertest {
-
+	
   val device = DeviceReaderActor.device
-
-  def main(args: Array[String]): Unit = {
+  
+  def init(args: Array[String]) = {
     MessageMeasurer.setFile("/tmp/measurement.log")
     MessageMeasurer.measure(null, "startup");
     TPMDebugger.setFile(args(1))
@@ -30,6 +31,13 @@ object Dispatchertest {
     Thread.sleep(100);
     DeviceReaderActor ! "START"
     println(TPMConfiguration.partialDHKey.toString)
+  }
+  
+  def setupDh() = {
+    
+  }
+  def main(args: Array[String]): Unit = {
+    init(args)
 
     try {
       // start automatically to broadcast!
@@ -39,14 +47,14 @@ object Dispatchertest {
     	 * first of all init the kernel module!
     	 */
       val random = new scala.util.Random();
-      val dhKey = scala.math.abs(random.nextLong());
+     
       //           1234567890123456   <- is 16 Byte char array!
-      val aesKey = "AES_KEY" + scala.math.abs(random.nextLong()).toString.substring(0, 9);
+      val aesKey = scala.math.abs(random.nextLong()).toString.substring(0, 16);
       //change this later to dynamic data
-      TPMConfiguration.partialDHKey = dhKey
+      //TPMConfiguration.partialDHKey = dhKey
       TPMConfiguration.aesKey = aesKey
-      println("[Init DH Partial Key ......] " + TPMConfiguration.partialDHKey)
-      DeviceWriterActor ! "00::init_dh_key::" + TPMConfiguration.partialDHKey
+      println("[Init DH Partial Key ......] " + DiffieHellmanKeyExchange.getPublicKey())
+      DeviceWriterActor ! "00::init_dh_key::" + DiffieHellmanKeyExchange.getPublicKey()
       println("[INIT AES Key        ......] " + TPMConfiguration.aesKey)
       DeviceWriterActor ! "00::init_aes_key::" + TPMConfiguration.aesKey;
 
@@ -82,14 +90,13 @@ object Dispatchertest {
           }
           case c: String if command == "c" => {
 
-            val dhKey = scala.math.abs(random.nextLong());
-            //           1234567890123456   <- is 16 Byte char array!
-            val aesKey = "AES_KEY" + scala.math.abs(random.nextLong()).toString.substring(0, 9);
+            val aesKey = scala.math.abs(random.nextLong()).toString.substring(0, 16);
             //change this later to dynamic data
-            TPMConfiguration.partialDHKey = dhKey
+            
             TPMConfiguration.aesKey = aesKey
-            println("[CHANGE DH Partial Key ......] " + TPMConfiguration.partialDHKey)
-            DeviceWriterActor ! "00::init_dh_key::" + TPMConfiguration.partialDHKey
+            DiffieHellmanKeyExchange.newSecretKey();
+            println("[CHANGE DH Partial Key ......] " + DiffieHellmanKeyExchange.getPublicKey())
+            DeviceWriterActor ! "00::init_dh_key::" + DiffieHellmanKeyExchange.getPublicKey()
             println("[CHANGE AES Key        ......] " + TPMConfiguration.aesKey)
             DeviceWriterActor ! "00::init_aes_key::" + TPMConfiguration.aesKey;
           }

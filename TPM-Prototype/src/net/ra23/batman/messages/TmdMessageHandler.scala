@@ -5,7 +5,7 @@ import net.ra23.tpm._;
 import net.ra23.tpm.config._;
 import net.ra23.batman.communication._;
 
-case class TmdMessageHandler(message: TmdMessage) extends BasicMessageHandler(message) {
+case class TmdMessageHandler(message: TmdMessage, as: String) extends BasicMessageHandler(message, as) {
   def handle(): Boolean = {
     isHandled=true;
     true

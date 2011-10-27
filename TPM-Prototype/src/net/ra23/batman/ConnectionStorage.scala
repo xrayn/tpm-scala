@@ -78,7 +78,7 @@ object ConnectionStorage {
     result.reverse
   }
   def keyDbasList(): List[List[Any]] = {
-    var result = List(List("Line", "Mac", "Key"));
+    var result = List(List("Line", "Mac", "DH Public Key"));
     var count = 1;
     for (row <- keyDb) {
       result = List(count.toString(), row._1, row._2.toString()) :: result
