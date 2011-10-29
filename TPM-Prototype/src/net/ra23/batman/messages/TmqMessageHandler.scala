@@ -8,13 +8,12 @@ import net.ra23.tpm.config._;
 import net.ra23.batman.communication._;
 
 case class TmqMessageHandler(message: TmqMessage, as: String) extends BasicMessageHandler(message, as) {
-
   def handle(): Boolean = {
-    Thread.sleep(50);
     isHandled = true;
     true
   }
+
   def getFollowupMessageAsServer(): Option[Unicast] = {
-    Some(Unicast("03::" + message.mac + "::03::c::" + TPMConfiguration.mac + "::" + DiffieHellmanKeyExchange.encryptBlowfish(TPMConfiguration.aesKey, ConnectionStorage.getPeerKey(message.mac)) ))
+    Some(Unicast("03::" + message.mac + "::03::c::" + TPMConfiguration.mac + "::" + PayloadEncryptor.encryptBlowfish(TPMConfiguration.aesKey, message.mac)))
   }
 }

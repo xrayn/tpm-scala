@@ -4,12 +4,11 @@ import net.ra23.batman.communication._;
 import net.ra23.batman.encyrption._;
 import net.ra23.batman._;
 
-
 case class TmdMessage(msg: String) extends BasicMessage(msg) {
-	val encryptionKey=payload;
-	
-	fields("encryptionKey") = encryptionKey;
-	def getResponseMessage(): Unicast = {
-    Unicast(state+"::"++mac+"::"+state+"::s::"+TPMConfiguration.mac+"::"+DiffieHellmanKeyExchange.encryptBlowfish(TPMConfiguration.aesKey, ConnectionStorage.getPeerKey(mac)))
+  val encryptionKey = payload;
+
+  fields("encryptionKey") = encryptionKey;
+  def getResponseMessage(): Unicast = {
+    Unicast(state + "::" ++ mac + "::" + state + "::s::" + TPMConfiguration.mac + "::" + PayloadEncryptor.encryptBlowfish(TPMConfiguration.aesKey, mac))
   }
 }
