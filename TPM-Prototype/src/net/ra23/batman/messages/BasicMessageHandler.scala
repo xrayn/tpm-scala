@@ -5,6 +5,7 @@ import net.ra23.batman.messages.types._;
 import net.ra23.tpm._;
 import net.ra23.tpm.config._;
 import net.ra23.batman.communication._;
+import net.ra23.batman._;
 
 abstract class BasicMessageHandler(message: BasicMessage, as: String) {
   var isHandled = false;

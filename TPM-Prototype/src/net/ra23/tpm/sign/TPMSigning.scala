@@ -55,6 +55,7 @@ import java.security.Signature;
 
 object TPMSigning {
   val tpm = TPM
+
   // is later only visible in getCertifiedKey
   val certifyKey = TpmSigningKey()
 

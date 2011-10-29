@@ -86,4 +86,7 @@ object ConnectionStorage {
     }
     result.reverse
   }
+  def getPeerKey(mac: String): Option[String] = {
+    keyDb.get(mac);
+  }
 }

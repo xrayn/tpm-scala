@@ -2,6 +2,7 @@ package net.ra23.batman.messages.types
 import net.ra23.tpm.config._;
 import net.ra23.batman.communication._;
 import net.ra23.batman.encyrption._;
+import net.ra23.batman._;
 
 
 case class TmdMessage(msg: String) extends BasicMessage(msg) {
@@ -9,6 +10,6 @@ case class TmdMessage(msg: String) extends BasicMessage(msg) {
 	
 	fields("encryptionKey") = encryptionKey;
 	def getResponseMessage(): Unicast = {
-    Unicast(state+"::"++mac+"::"+state+"::s::"+TPMConfiguration.mac+"::"+DiffieHellmanKeyExchange.getAddedAesKey(TPMConfiguration.aesKey))
+    Unicast(state+"::"++mac+"::"+state+"::s::"+TPMConfiguration.mac+"::"+DiffieHellmanKeyExchange.encryptBlowfish(TPMConfiguration.aesKey, ConnectionStorage.getPeerKey(mac)))
   }
 }

@@ -11,6 +11,7 @@ import net.ra23.tpm.config._;
 import net.ra23.batman.messages._;
 import net.ra23.batman.measurement._;
 import net.ra23.batman.encyrption._;
+import net.ra23.batman._;
 
 object MsgDispatcher extends Actor {
   /**
@@ -40,7 +41,7 @@ object MsgDispatcher extends Actor {
           DeviceWriterActor ! TmdMessageHandler(msg, "client").getFollowupMessageAsServer()
         }
         // inject the received aes key!
-        DeviceWriterActor ! "00::insert_aes_key::"+msg.mac+"::"+DiffieHellmanKeyExchange.getAesKeyFromPayload(msg.payload)
+        DeviceWriterActor ! "00::insert_aes_key::"+msg.mac+"::"+DiffieHellmanKeyExchange.decryptBlowfish(msg.payload, ConnectionStorage.getPeerKey(msg.mac))
       }
       if (messageHandler.isHandled == true) {
         
