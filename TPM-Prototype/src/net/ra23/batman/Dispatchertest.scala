@@ -1,6 +1,8 @@
 package net.ra23.batman
 
 import scala.io.Source;
+
+import java.net._
 import scala.actors.Actor
 import scala.actors.Actor._
 import java.io._;
@@ -16,11 +18,13 @@ object Dispatchertest {
   val device = DeviceReaderActor.device
   
   def init(args: Array[String]) = {
+    val localNetworkInterface = NetworkInterface.getByName("eth0");
+    val localMacAddress = localNetworkInterface.getHardwareAddress.toList.map(b => String.format("%02x",b.asInstanceOf[AnyRef])).mkString(":")
     MessageMeasurer.setFile("/tmp/measurement.log")
     MessageMeasurer.measure(null, "startup");
     TPMDebugger.setFile(args(1))
     TPMDebugger.log("Start")
-    TPMConfiguration.mac = args(0)
+    TPMConfiguration.mac = localMacAddress
     val in = args(2)
     val out = args.tail.tail.tail.toList
     DeviceReaderActor(in);
