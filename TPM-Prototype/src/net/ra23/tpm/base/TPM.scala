@@ -50,6 +50,9 @@ import net.ra23.tpm.context._;
 import net.ra23.tpm.crypt._;
 import net.ra23.tpm.debugger._;
 
+case class TPM {
+  
+}
 object TPM {
   val config = TPMConfiguration.fromXmlFile("/tmp/config.xml")
   var key: TcIRsaKey = null;
