@@ -7,11 +7,16 @@ import net.ra23.batman.communication._;
 
 case class TmcMessageHandler(message: TmcMessage, as :String) extends BasicMessageHandler(message, as) {
   def handle(): Boolean = {
+    isValid=true;
     isHandled = true;
-    true
+    isHandled
   }
 
   def getFollowupMessageAsServer(): Option[Unicast] = {
-    Some(Unicast("02::" + message.mac + "::02::c::" + TPMConfiguration.mac + "::CLIENT_QUOUTE::CLIENT_SML_HASH"))
+     isValid match {
+      case iv: Boolean if iv  => Some(Unicast("02::" + message.mac + "::02::c::" + TPMConfiguration.mac + "::CLIENT_QUOUTE::CLIENT_SML_HASH"))
+      case iv: Boolean if !iv  => None
+    }
+    
   }
 }

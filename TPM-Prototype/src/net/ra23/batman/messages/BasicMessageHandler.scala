@@ -9,14 +9,14 @@ import net.ra23.batman._;
 
 abstract class BasicMessageHandler(message: BasicMessage, as: String) {
   var isHandled = false;
-  var isValid = true
+  var isValid = false;
   var encryptedAesKey = "";
   _start();
 
   def _start() = {
     startMeasurement()
-    insertIntoConnectionStorage()
     handle()
+    insertIntoConnectionStorage()
     endMeasurement()
   }
   def handle(): Boolean
@@ -31,8 +31,12 @@ abstract class BasicMessageHandler(message: BasicMessage, as: String) {
       net.ra23.batman.ConnectionStorage.update(message.mac, message)
     }
   }
-  def getFollowupMessageAsClient(): Unicast = {
-    message.getResponseMessage()
+  def getFollowupMessageAsClient(): Option[Unicast] = {
+    isValid match {
+      case iv: Boolean if iv  => Some(message.getResponseMessage())
+      case iv: Boolean if !iv  => None
+    }
+
   }
   def getFollowupMessageAsServer(): Option[Unicast]
 }

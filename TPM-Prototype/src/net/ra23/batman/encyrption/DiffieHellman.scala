@@ -13,7 +13,13 @@ import org.apache.commons.codec.binary.Base64;
 
  
 object DiffieHellmanKeyExchange {
-
+  /*
+   * this key is far too weak for production
+   * either use: http://tools.ietf.org/html/rfc5114#section-2.2
+   * (key of 3072 Bit is needed, there is none)
+   * or use Elliptic_curve_cryptography 
+   * (http://en.wikipedia.org/wiki/Elliptic_curve_cryptography)
+   */
   val p = BigInt("212104724539190889451952152158338349769") //DiffieHellman.randomPrime(128)
   val g = 5
 

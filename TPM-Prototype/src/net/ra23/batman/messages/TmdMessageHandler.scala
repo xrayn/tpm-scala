@@ -10,8 +10,9 @@ import net.ra23.batman._;
 
 case class TmdMessageHandler(message: TmdMessage, as: String) extends BasicMessageHandler(message, as) {
   def handle(): Boolean = {
+    isValid=true;
     isHandled=true;
-    true
+    isHandled
   }
  
   
