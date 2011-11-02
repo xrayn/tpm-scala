@@ -53,8 +53,7 @@ import net.ra23.tpm.debugger._;
 import iaik.tc.tss.api.structs.tpm._;
 import java.security.Signature;
 import net.ra23.tpm.validate.TPMValidation;
-import sun.misc.BASE64Decoder;
-import sun.misc.BASE64Encoder;
+import org.apache.commons.codec.binary.Base64;
 
 class TPMSigning {
   
@@ -77,7 +76,7 @@ object TPMSigning {
       val resultObject = new ObjectOutputStream(baos)
       resultObject.writeObject(new TPMValidation(dataToValidate))
       resultObject.close
-      new BASE64Encoder().encode(baos.toByteArray());
+      new Base64().encodeAsString(baos.toByteArray());
   }
   
   def getQuote(): TcTssValidation = {
@@ -98,7 +97,7 @@ object TPMSigning {
   }
 
   def verifyCertifiedNonce(dataToValidateBase64: String, certifyKey: TcIRsaKey): Boolean = {
-    val data =   new BASE64Decoder().decodeBuffer(dataToValidateBase64);
+    val data =   new Base64().decode(dataToValidateBase64);
     val bais = new ByteArrayInputStream(data)
     val in = new ObjectInputStream(bais);    
     val dataToValidate = in.readObject().asInstanceOf[TPMValidation];

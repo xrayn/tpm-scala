@@ -9,8 +9,8 @@ import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
-import sun.misc.BASE64Decoder;
-import sun.misc.BASE64Encoder;
+import org.apache.commons.codec.binary.Base64;
+
  
 object DiffieHellmanKeyExchange {
 
@@ -31,7 +31,7 @@ object DiffieHellmanKeyExchange {
         val cipher = Cipher.getInstance("Blowfish/ECB/PKCS5Padding");
         cipher.init(Cipher.ENCRYPT_MODE, myKeySpec);
         val ciphertext = cipher.doFinal(aesKey.getBytes())
-        val cipherout = new BASE64Encoder().encode( ciphertext );
+        val cipherout = new Base64().encodeAsString( ciphertext );
         cipherout
       }
     }
@@ -45,7 +45,7 @@ object DiffieHellmanKeyExchange {
         val myKeySpec = new SecretKeySpec(sharedKey, "Blowfish");
         val cipher = Cipher.getInstance("Blowfish/ECB/PKCS5Padding");
         cipher.init(Cipher.DECRYPT_MODE, myKeySpec);
-        val crypted = new BASE64Decoder().decodeBuffer(aesKey);
+        val crypted = new Base64().decode(aesKey);
         var plaintext = ""
         cipher.doFinal(crypted).foreach(c=>{ plaintext=plaintext+c.toChar});
         plaintext

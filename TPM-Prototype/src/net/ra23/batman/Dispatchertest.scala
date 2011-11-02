@@ -2,6 +2,7 @@ package net.ra23.batman
 
 import scala.io.Source;
 
+
 import java.net._
 import scala.actors.Actor
 import scala.actors.Actor._
@@ -89,7 +90,7 @@ object Dispatchertest {
             println("[Testing tmq & tmd ......]")
             for ((mac, partialDhKey) <- net.ra23.batman.ConnectionStorage.keyDb) {
               /* deactivated until tpm device available at clients! */
-              DeviceWriterActor ! Some(Unicast("02::" + mac + "::02::c::" + TPMConfiguration.mac + "::"+TPMSigning.getQuoteBase64().replace("\n","")+"::CLIENT_SML_HASH"))
+              DeviceWriterActor ! Some(Unicast("02::" + mac + "::02::c::" + TPMConfiguration.mac + "::"+TPMSigning.getQuoteBase64()+"::CLIENT_SML_HASH"))
               //DeviceWriterActor ! Some(Unicast("02::" + mac + "::02::c::" + TPMConfiguration.mac + "::TPM_QUOTE::CLIENT_SML_HASH"))
             }
           }

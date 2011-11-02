@@ -22,5 +22,6 @@
 	<classpathentry kind="lib" path="libs/iaik_jtss_tcs.jar"/>
 	<classpathentry kind="lib" path="libs/iaik_jtss_tsp_soap.jar"/>
 	<classpathentry kind="lib" path="libs/iaik_jtss_tsp.jar"/>
+	<classpathentry kind="lib" path="libs/commons-codec-1.5.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
