@@ -3,11 +3,6 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.scala-ide.sdt.launching.SCALA_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
-	<classpathentry kind="lib" path="libs/iaik_jtss_tcs_soap.jar"/>
-	<classpathentry kind="lib" path="libs/iaik_jtss_tcs-debug.jar" sourcepath="/home/ar/Documents/Masterarbeit/tpmstuff/java/jTSS_0.6/src/jtss_common/src/iaik/tc/tss/impl/csp"/>
-	<classpathentry kind="lib" path="libs/iaik_jtss_tools.jar"/>
-	<classpathentry kind="lib" path="libs/iaik_jtss_tsp_soap.jar"/>
-	<classpathentry kind="lib" path="libs/iaik_jtss_tsp-debug.jar"/>
 	<classpathentry kind="lib" path="ext-libs/activation.jar"/>
 	<classpathentry kind="lib" path="ext-libs/axis-ant.jar"/>
 	<classpathentry kind="lib" path="ext-libs/axis.jar"/>
@@ -21,6 +16,11 @@
 	<classpathentry kind="lib" path="ext-libs/mail.jar"/>
 	<classpathentry kind="lib" path="ext-libs/saaj.jar"/>
 	<classpathentry kind="lib" path="ext-libs/wsdl4j-1.5.1.jar"/>
-	<classpathentry kind="lib" path="/home/ar/Downloads/scala-2.9.1.final/lib/scala-compiler.jar"/>
+	<classpathentry kind="lib" path="libs/scala-compiler.jar"/>
+	<classpathentry kind="lib" path="libs/iaik_jtpmtools.jar"/>
+	<classpathentry kind="lib" path="libs/iaik_jtss_tcs_soap.jar"/>
+	<classpathentry kind="lib" path="libs/iaik_jtss_tcs.jar"/>
+	<classpathentry kind="lib" path="libs/iaik_jtss_tsp_soap.jar"/>
+	<classpathentry kind="lib" path="libs/iaik_jtss_tsp.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

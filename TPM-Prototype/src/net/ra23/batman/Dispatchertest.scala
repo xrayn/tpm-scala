@@ -17,8 +17,7 @@ import net.ra23.tpm.base._;
 
 object Dispatchertest {
 	
-  val device = DeviceReaderActor.device
-  var tpm: TPM = null; 
+  val device = DeviceReaderActor.device 
   def init(args: Array[String]) = {
     val localNetworkInterface = NetworkInterface.getByName("eth0");
     val localMacAddress = localNetworkInterface.getHardwareAddress.toList.map(b => String.format("%02x",b.asInstanceOf[AnyRef])).mkString(":")
@@ -35,7 +34,7 @@ object Dispatchertest {
     Thread.sleep(500)
     TPMDebugger.log("initialize tpm");
     /* deactivated until tpm device available at clients! */
-    //tpm = net.ra23.tpm.base.TPM();
+    TPM.init();
     TPMDebugger.log("Sleeping 5s");
     Thread.sleep(100);
     DeviceReaderActor ! "START"
@@ -90,8 +89,8 @@ object Dispatchertest {
             println("[Testing tmq & tmd ......]")
             for ((mac, partialDhKey) <- net.ra23.batman.ConnectionStorage.keyDb) {
               /* deactivated until tpm device available at clients! */
-              //DeviceWriterActor ! Some(Unicast("02::" + mac + "::02::c::" + TPMConfiguration.mac + "::"+TPMSigning.getQuoteBase64()+"::CLIENT_SML_HASH"))
-              DeviceWriterActor ! Some(Unicast("02::" + mac + "::02::c::" + TPMConfiguration.mac + "::TPM_QUOTE::CLIENT_SML_HASH"))
+              DeviceWriterActor ! Some(Unicast("02::" + mac + "::02::c::" + TPMConfiguration.mac + "::"+TPMSigning.getQuoteBase64().replace("\n","")+"::CLIENT_SML_HASH"))
+              //DeviceWriterActor ! Some(Unicast("02::" + mac + "::02::c::" + TPMConfiguration.mac + "::TPM_QUOTE::CLIENT_SML_HASH"))
             }
           }
           case c: String if command == "b" => {

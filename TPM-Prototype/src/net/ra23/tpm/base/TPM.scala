@@ -50,15 +50,13 @@ import net.ra23.tpm.context._;
 import net.ra23.tpm.crypt._;
 import net.ra23.tpm.debugger._;
 
-case class TPM {
-  
-}
+
 object TPM {
   val config = TPMConfiguration.fromXmlFile("/tmp/config.xml")
   var key: TcIRsaKey = null;
-  val tcs_ = new TcTcsBindingLocal()
+  //val tcs_ = new TcTcsBindingLocal()
   val TPM_MAN_ETHZ: TcBlobData = TcBlobData.newStringASCII("ETHZ")
-  val hContext_ = tcs_.TcsiOpenContext()(1).asInstanceOf[Long]
+  //val hContext_ = tcs_.TcsiOpenContext()(1).asInstanceOf[Long]
   var uuids = HashMap.empty[String, TcTssUuid]
 
   /**
@@ -136,6 +134,9 @@ object TPM {
     TPMCrypto.decrypt(TPMCrypto.encrypt(aKey2, "I AM A TEST 3"), aKey2)
     TPMCrypto.decrypt(TPMCrypto.encrypt(aKey2, "I AM A TEST 4"), aKey2)
 
+  }
+  def init() = {
+    val key = TpmSigningKey();
   }
 
 }
