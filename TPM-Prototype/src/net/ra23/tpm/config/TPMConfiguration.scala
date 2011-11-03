@@ -26,7 +26,7 @@ object TPMConfiguration {
     }
   }
   def fromXmlFile(filename: String) = {
-    try fromXML(scala.xml.XML.load(filename)) 
+    try fromXML(scala.xml.XML.load(filename))
     catch {
       case e: java.io.FileNotFoundException => fromXML(default)
     }
@@ -34,7 +34,7 @@ object TPMConfiguration {
   }
   def get(key: String) = {
     myMap(key).toString()
-  } 
+  }
   override def toString() = {
     myMap.toString();
   }
@@ -44,8 +44,8 @@ object TPMConfiguration {
   }
   val random = new scala.util.Random();
   var partialDHKey = scala.math.abs(random.nextLong());
-  var mac="";
-  var aesKey=""
+  var mac = "";
+  var aesKey = ""
   //println(fromXML(atest))
 
   //

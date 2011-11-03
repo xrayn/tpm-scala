@@ -10,12 +10,11 @@ import net.ra23.batman._;
 
 case class TmdMessageHandler(message: TmdMessage, as: String) extends BasicMessageHandler(message, as) {
   def handle(): Boolean = {
-    isValid=true;
-    isHandled=true;
+    isValid = true;
+    isHandled = true;
     isHandled
   }
- 
-  
+
   def getFollowupMessageAsServer(): Option[Unicast] = {
     TPMDebugger.log("Protocol ended no follow up action needed", "debug")
     None

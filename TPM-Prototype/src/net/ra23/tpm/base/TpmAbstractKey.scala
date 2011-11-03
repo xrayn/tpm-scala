@@ -61,7 +61,7 @@ abstract class TpmAbstractKey {
     new java.math.BigInteger(modulus.asByteArray())
   }
   def getExponent() = {
-    var result= new java.math.BigInteger("0"); 
+    var result = new java.math.BigInteger("0");
     try {
       val exponent = key.getAttribData(TcTssConstants.TSS_TSPATTRIB_RSAKEY_INFO, TcTssConstants.TSS_TSPATTRIB_KEYINFO_RSA_EXPONENT)
       // BigInteger requires a leading sign-byte
@@ -72,7 +72,7 @@ abstract class TpmAbstractKey {
         TPMDebugger.log("Using default key: 65537", "debug")
         result = new java.math.BigInteger("65537")
       }
-    } 
+    }
     //println("Expo: "+exponent.toHexStringNoWrap());
     // this is the default exponent
     result

@@ -23,9 +23,9 @@ object MsgDispatcher extends Actor {
     message match {
       case null => TPMDebugger.log(getClass().getSimpleName() + ": message was null!", "debug");
       case msg: TmcMessage => {
-          // there is no follow up!
-          //DeviceWriterActor !
-          messageHandler = TmcMessageHandler(msg, "broadcast") //.getFollowupMessageAsClient()
+        // there is no follow up!
+        //DeviceWriterActor !
+        messageHandler = TmcMessageHandler(msg, "broadcast") //.getFollowupMessageAsClient()
       }
       case msg: TmqMessage => {
         if (msg.isFromClient) {
@@ -34,18 +34,19 @@ object MsgDispatcher extends Actor {
           DeviceWriterActor ! TmqMessageHandler(msg, "client").getFollowupMessageAsServer()
         }
       }
-      case msg: TmdMessage => {
-        if (msg.isFromClient) {
-          DeviceWriterActor ! TmdMessageHandler(msg, "server").getFollowupMessageAsClient()
-        } else if (!msg.isFromClient) {
-          DeviceWriterActor ! TmdMessageHandler(msg, "client").getFollowupMessageAsServer()
+      case msg: TmdMessage =>
+        {
+          if (msg.isFromClient) {
+            DeviceWriterActor ! TmdMessageHandler(msg, "server").getFollowupMessageAsClient()
+          } else if (!msg.isFromClient) {
+            DeviceWriterActor ! TmdMessageHandler(msg, "client").getFollowupMessageAsServer()
+          }
+          // inject the received aes key!
+          DeviceWriterActor ! "00::insert_aes_key::" + msg.mac + "::" + DiffieHellmanKeyExchange.decryptBlowfish(msg.payload, ConnectionStorage.getPeerKey(msg.mac))
         }
-        // inject the received aes key!
-        DeviceWriterActor ! "00::insert_aes_key::"+msg.mac+"::"+DiffieHellmanKeyExchange.decryptBlowfish(msg.payload, ConnectionStorage.getPeerKey(msg.mac))
-      }
-      if (messageHandler.isHandled == true) {
-        
-      }
+        if (messageHandler.isHandled == true) {
+
+        }
     }
   }
   /**

@@ -8,10 +8,9 @@ import net.ra23.batman.communication._;
 import java.lang.ProcessBuilder;
 import scala.sys.process.Process
 
-
 object DeviceReaderActor extends Actor {
   //val file = "/dev/mcom"
-  
+
   val test = new Array[Byte](1000)
   var file = ""
   var device: RandomAccessFile = null;
@@ -27,13 +26,13 @@ object DeviceReaderActor extends Actor {
   def read(): String = {
     var result = ""
     //val fiS = new FileInputStream(file)
-    
-//    while (fiS.available() == 0) {
-//      Thread.sleep(10)
-//      
-//      TPMDebugger.log("no data sleeping ... ", "debug");
-//    }
-    device =new RandomAccessFile(file, "rw");
+
+    //    while (fiS.available() == 0) {
+    //      Thread.sleep(10)
+    //      
+    //      TPMDebugger.log("no data sleeping ... ", "debug");
+    //    }
+    device = new RandomAccessFile(file, "rw");
     val len = device.read(test)
     //unlockFile()
     val tmp = new Array[Byte](len)
@@ -51,23 +50,23 @@ object DeviceReaderActor extends Actor {
     }
   }
   def apply(filename: String) {
-	//createListenerFile(filename);
+    //createListenerFile(filename);
     file = filename;
     start()
   }
   def createListenerFile(filename: String) {
     if (new File(filename).exists()) {
-      TPMDebugger.log(getClass().getSimpleName() + ": removing " +filename+ "", "debug");
-      val pb = Process("""rm -f """+filename)
+      TPMDebugger.log(getClass().getSimpleName() + ": removing " + filename + "", "debug");
+      val pb = Process("""rm -f """ + filename)
       pb.!
     }
-    if (new File(filename+".lock").exists()) {
-      TPMDebugger.log(getClass().getSimpleName() + ": removing " +filename+".lock", "debug");
-      val pb = Process("""rm -f """+filename+".lock")
+    if (new File(filename + ".lock").exists()) {
+      TPMDebugger.log(getClass().getSimpleName() + ": removing " + filename + ".lock", "debug");
+      val pb = Process("""rm -f """ + filename + ".lock")
       //val pb = new ProcessBuilder("rm", "-f", );
       pb.!
     }
-    TPMDebugger.log(getClass().getSimpleName() + ": creating new " +filename+"", "debug");
+    TPMDebugger.log(getClass().getSimpleName() + ": creating new " + filename + "", "debug");
     val pb = new ProcessBuilder("mkfifo", filename);
     pb.start();
   }

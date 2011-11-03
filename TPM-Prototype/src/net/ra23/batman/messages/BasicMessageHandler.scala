@@ -33,8 +33,8 @@ abstract class BasicMessageHandler(message: BasicMessage, as: String) {
   }
   def getFollowupMessageAsClient(): Option[Unicast] = {
     isValid match {
-      case iv: Boolean if iv  => Some(message.getResponseMessage())
-      case iv: Boolean if !iv  => None
+      case iv: Boolean if iv => Some(message.getResponseMessage())
+      case iv: Boolean if !iv => None
     }
 
   }

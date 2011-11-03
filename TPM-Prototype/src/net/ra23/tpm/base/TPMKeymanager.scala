@@ -15,10 +15,8 @@ import scala.collection.mutable._;
 //import org.apache.log4j.Logger;
 import net.ra23.tpm.debugger._;
 
-
 object TPMKeymanager {
- 
-  
+
   val srk_ = TPMContext.context.getKeyByUuid(TcTssConstants.TSS_PS_TYPE_SYSTEM,
     TcUuidFactory.getInstance().getUuidSRK());
   val tpm = TPMContext.context.getTpmObject()
@@ -26,8 +24,8 @@ object TPMKeymanager {
    * size definition 
    */
   val keySize = TcTssConstants.TSS_KEY_SIZE_2048;
-  val bindingKeyDb=Map.empty[String, TpmBindingKey]
-  
+  val bindingKeyDb = Map.empty[String, TpmBindingKey]
+
   if (tpm == null || TPMContext.context == null) {
     println("tpm or  == null");
   }
@@ -35,66 +33,64 @@ object TPMKeymanager {
    * apply the policies 
    */
   TPMPolicy.applyPolicy(TPMPolicy.srkPolicy, srk_)
-  TPMDebugger.log( "SRK Policy applied to srk")
+  TPMDebugger.log("SRK Policy applied to srk")
   TPMPolicy.applyPolicy(TPMPolicy.tpmPolicy, tpm)
   TPMDebugger.log("SRK Policy applied to tpm")
-  
 
-  
-//  @deprecated def migrateKey(): TcIRsaKey = {
-//    // create the key of the migration authority
-//    val maKey = TPMContext.context.createRsaKeyObject(TcTssConstants.TSS_KEY_SIZE_2048
-//      | TcTssConstants.TSS_KEY_TYPE_MIGRATE | TcTssConstants.TSS_KEY_AUTHORIZATION);
-//    TPMPolicy.keyUsgPolicy.assignToObject(maKey);
-//    TPMPolicy.keyMigPolicy.assignToObject(maKey);
-//    maKey.createKey(srk_, null);
-//
-//    // create the key (data) to migrate from
-//    val srcKey = TPMContext.context.createRsaKeyObject(TcTssConstants.TSS_KEY_SIZE_2048
-//      | TcTssConstants.TSS_KEY_TYPE_BIND | TcTssConstants.TSS_KEY_MIGRATABLE | TcTssConstants.TSS_KEY_AUTHORIZATION);
-//    TPMPolicy.keyUsgPolicy.assignToObject(srcKey);
-//    TPMPolicy.keyMigPolicy.assignToObject(srcKey);
-//    srcKey.createKey(srk_, null);
-//
-//    // authorize the migration authority to be used and create migration blob
-//    val keyAuth = tpm.authorizeMigrationTicket(maKey, TcTssConstants.TSS_MS_MIGRATE);
-//    val out = srcKey.createMigrationBlob(srk_, keyAuth);
-//    val random = out(0); // send this to the destination
-//    val migData = out(1); // send this to Migration Authority
-//
-//    // create the migration data key object
-//    val migDataKey = TPMContext.context.createRsaKeyObject(TcTssConstants.TSS_KEY_TYPE_LEGACY);
-//    migDataKey.setAttribData(TcTssConstants.TSS_TSPATTRIB_KEY_BLOB,
-//      TcTssConstants.TSS_TSPATTRIB_KEYBLOB_BLOB, migData);
-//
-//    val pubKey = TPMContext.context.createRsaKeyObject(TcTssConstants.TSS_KEY_SIZE_2048
-//      | TcTssConstants.TSS_KEY_TYPE_STORAGE | TcTssConstants.TSS_KEY_NO_AUTHORIZATION);
-//    TPMPolicy.keyUsgPolicy.assignToObject(pubKey);
-//    TPMPolicy.keyMigPolicy.assignToObject(pubKey);
-//    pubKey.createKey(srk_, null);
-//    // migrate the data (key)
-//    maKey.loadKey(srk_);
-//    pubKey.loadKey(srk_);
-//    maKey.migrateKey(pubKey, migDataKey);
-//
-//    val migratedData = migDataKey.getAttribData(TcTssConstants.TSS_TSPATTRIB_KEY_BLOB,
-//      TcTssConstants.TSS_TSPATTRIB_KEYBLOB_BLOB);
-//
-//    // create an key object for the migrated key
-//    val destKey = TPMContext.context.createRsaKeyObject(TcTssConstants.TSS_KEY_SIZE_2048
-//      | TcTssConstants.TSS_KEY_TYPE_BIND | TcTssConstants.TSS_KEY_MIGRATABLE | TcTssConstants.TSS_KEY_NO_AUTHORIZATION);
-//
-//    // convert the migration blob to create a normal wrapped key
-//    destKey.convertMigrationBlob(pubKey, random, migratedData);
-//
-//    println(out(0).toHexString());
-//    // create encdata object and test decrption
-//
-//    destKey
-//    //maybe an TcBlobData has to be used for transporting to destination
-//    // this key is used at the destination to encrypt data
-//  }
-//
+  //  @deprecated def migrateKey(): TcIRsaKey = {
+  //    // create the key of the migration authority
+  //    val maKey = TPMContext.context.createRsaKeyObject(TcTssConstants.TSS_KEY_SIZE_2048
+  //      | TcTssConstants.TSS_KEY_TYPE_MIGRATE | TcTssConstants.TSS_KEY_AUTHORIZATION);
+  //    TPMPolicy.keyUsgPolicy.assignToObject(maKey);
+  //    TPMPolicy.keyMigPolicy.assignToObject(maKey);
+  //    maKey.createKey(srk_, null);
+  //
+  //    // create the key (data) to migrate from
+  //    val srcKey = TPMContext.context.createRsaKeyObject(TcTssConstants.TSS_KEY_SIZE_2048
+  //      | TcTssConstants.TSS_KEY_TYPE_BIND | TcTssConstants.TSS_KEY_MIGRATABLE | TcTssConstants.TSS_KEY_AUTHORIZATION);
+  //    TPMPolicy.keyUsgPolicy.assignToObject(srcKey);
+  //    TPMPolicy.keyMigPolicy.assignToObject(srcKey);
+  //    srcKey.createKey(srk_, null);
+  //
+  //    // authorize the migration authority to be used and create migration blob
+  //    val keyAuth = tpm.authorizeMigrationTicket(maKey, TcTssConstants.TSS_MS_MIGRATE);
+  //    val out = srcKey.createMigrationBlob(srk_, keyAuth);
+  //    val random = out(0); // send this to the destination
+  //    val migData = out(1); // send this to Migration Authority
+  //
+  //    // create the migration data key object
+  //    val migDataKey = TPMContext.context.createRsaKeyObject(TcTssConstants.TSS_KEY_TYPE_LEGACY);
+  //    migDataKey.setAttribData(TcTssConstants.TSS_TSPATTRIB_KEY_BLOB,
+  //      TcTssConstants.TSS_TSPATTRIB_KEYBLOB_BLOB, migData);
+  //
+  //    val pubKey = TPMContext.context.createRsaKeyObject(TcTssConstants.TSS_KEY_SIZE_2048
+  //      | TcTssConstants.TSS_KEY_TYPE_STORAGE | TcTssConstants.TSS_KEY_NO_AUTHORIZATION);
+  //    TPMPolicy.keyUsgPolicy.assignToObject(pubKey);
+  //    TPMPolicy.keyMigPolicy.assignToObject(pubKey);
+  //    pubKey.createKey(srk_, null);
+  //    // migrate the data (key)
+  //    maKey.loadKey(srk_);
+  //    pubKey.loadKey(srk_);
+  //    maKey.migrateKey(pubKey, migDataKey);
+  //
+  //    val migratedData = migDataKey.getAttribData(TcTssConstants.TSS_TSPATTRIB_KEY_BLOB,
+  //      TcTssConstants.TSS_TSPATTRIB_KEYBLOB_BLOB);
+  //
+  //    // create an key object for the migrated key
+  //    val destKey = TPMContext.context.createRsaKeyObject(TcTssConstants.TSS_KEY_SIZE_2048
+  //      | TcTssConstants.TSS_KEY_TYPE_BIND | TcTssConstants.TSS_KEY_MIGRATABLE | TcTssConstants.TSS_KEY_NO_AUTHORIZATION);
+  //
+  //    // convert the migration blob to create a normal wrapped key
+  //    destKey.convertMigrationBlob(pubKey, random, migratedData);
+  //
+  //    println(out(0).toHexString());
+  //    // create encdata object and test decrption
+  //
+  //    destKey
+  //    //maybe an TcBlobData has to be used for transporting to destination
+  //    // this key is used at the destination to encrypt data
+  //  }
+  //
   /*
    * dont know if this is needed!
    */
@@ -149,10 +145,10 @@ object TPMKeymanager {
     TPMContext.context.createRsaKeyObject(TcTssConstants.TSS_KEY_SIZE_2048
       | TcTssConstants.TSS_KEY_TYPE_BIND | TcTssConstants.TSS_KEY_MIGRATABLE | TcTssConstants.TSS_KEY_AUTHORIZATION);
   }
-  def createBindingKey()= {
-    val bindingKey= TpmBindingKey();
+  def createBindingKey() = {
+    val bindingKey = TpmBindingKey();
     val uuid = bindingKey.keyUuid.toStringNoPrefix();
-    bindingKeyDb+=(bindingKey.keyUuid.toStringNoPrefix() -> bindingKey)
+    bindingKeyDb += (bindingKey.keyUuid.toStringNoPrefix() -> bindingKey)
     uuid
   }
   def getBindingKey(uuid: String) = {

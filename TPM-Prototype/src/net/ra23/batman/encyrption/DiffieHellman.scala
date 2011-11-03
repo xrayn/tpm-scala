@@ -11,7 +11,6 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import org.apache.commons.codec.binary.Base64;
 
- 
 object DiffieHellmanKeyExchange {
   /*
    * this key is far too weak for production
@@ -30,14 +29,14 @@ object DiffieHellmanKeyExchange {
   def encryptBlowfish(aesKey: String, peerPubKey: Option[String]): String = {
     setPeerPubKey(BigInt(peerPubKey.get))
     val sharedKey = getSharedKey().toString().getBytes()
-     peerPubKey match {
+    peerPubKey match {
       case None => { "no key" }
       case key: Some[String] => {
         val myKeySpec = new SecretKeySpec(sharedKey, "Blowfish");
         val cipher = Cipher.getInstance("Blowfish/ECB/PKCS5Padding");
         cipher.init(Cipher.ENCRYPT_MODE, myKeySpec);
         val ciphertext = cipher.doFinal(aesKey.getBytes())
-        val cipherout = new Base64().encodeAsString( ciphertext );
+        val cipherout = new Base64().encodeAsString(ciphertext);
         cipherout
       }
     }
@@ -53,7 +52,7 @@ object DiffieHellmanKeyExchange {
         cipher.init(Cipher.DECRYPT_MODE, myKeySpec);
         val crypted = new Base64().decode(aesKey);
         var plaintext = ""
-        cipher.doFinal(crypted).foreach(c=>{ plaintext=plaintext+c.toChar});
+        cipher.doFinal(crypted).foreach(c => { plaintext = plaintext + c.toChar });
         plaintext
       }
     }
@@ -62,7 +61,7 @@ object DiffieHellmanKeyExchange {
   def getAddedAesKey(aesKey: String, peerPubKey: Option[String]): String = {
     setPeerPubKey(BigInt(peerPubKey.get))
     val sharedKey = getSharedKey().toString().getBytes()
-     (BigInt(aesKey) + getSharedKey()).toString()
+    (BigInt(aesKey) + getSharedKey()).toString()
   }
   def getAesKeyFromPayload(payload: String, peerPubKey: Option[String]): String = {
     setPeerPubKey(BigInt(peerPubKey.get))
@@ -118,7 +117,7 @@ class DiffieHellman(val g: Int, p: BigInt) {
   }
 
   def createSharedKey(): BigInt = {
-  doExpMod(peerPublicKey, secretKey, p)
+    doExpMod(peerPublicKey, secretKey, p)
   }
 
   private def doExpMod(x: BigInt): BigInt = {

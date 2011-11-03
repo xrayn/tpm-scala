@@ -57,7 +57,7 @@ object TPMain {
   val TPM_MAN_ETHZ: TcBlobData = TcBlobData.newStringASCII("ETHZ")
   val hContext_ = tcs_.TcsiOpenContext()(1).asInstanceOf[Long]
   var uuids = HashMap.empty[String, TcTssUuid]
-  
+
   /**
    * The TPM context.
    */
@@ -131,7 +131,7 @@ object TPMain {
     TPMCrypto.decrypt(TPMCrypto.encrypt(aKey2, "I AM A TEST 2"), aKey2)
     TPMCrypto.decrypt(TPMCrypto.encrypt(aKey2, "I AM A TEST 3"), aKey2)
     TPMCrypto.decrypt(TPMCrypto.encrypt(aKey2, "I AM A TEST 4"), aKey2)
-    
+
     //
   }
   def getTpmVersion() = {

@@ -16,17 +16,17 @@ object MessageMeasurer {
     //val date = new Date;
     level match {
       case "startup" => {
-        start=System.nanoTime();
-        Logger.debug("STARTTIME,"+start.toString());
+        start = System.nanoTime();
+        Logger.debug("STARTTIME," + start.toString());
       }
       case "start" => {
-        start=System.nanoTime();
-        Logger.debug(message+",START,"+start.toString()+",0,"+as.toUpperCase());
+        start = System.nanoTime();
+        Logger.debug(message + ",START," + start.toString() + ",0," + as.toUpperCase());
       }
       case "end" => {
-        val end=System.nanoTime();
-        Logger.debug(message+",END,"+end.toString()+","+((end-start)/1000)+","+as.toUpperCase());
-        start=0L
+        val end = System.nanoTime();
+        Logger.debug(message + ",END," + end.toString() + "," + ((end - start) / 1000) + "," + as.toUpperCase());
+        start = 0L
       }
       case _ => Logger.info(message)
     }

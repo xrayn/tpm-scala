@@ -56,7 +56,7 @@ import net.ra23.tpm.validate.TPMValidation;
 import org.apache.commons.codec.binary.Base64;
 
 class TPMSigning {
-  
+
 }
 object TPMSigning {
   val tpm = TPM
@@ -70,15 +70,15 @@ object TPMSigning {
     println(verifyCertifiedNonce(getQuoteBase64(), TPMKeymanager.createRsaKeyObject(TPMKeymanager.importPublicKey("/tmp/key.pub"))))
     //println(verifyCertifiedNonce(getQuote(), certifyKey))
   }
-  def getQuoteBase64(): String =  {
-     val dataToValidate = getQuote();
-      val baos = new ByteArrayOutputStream();
-      val resultObject = new ObjectOutputStream(baos)
-      resultObject.writeObject(new TPMValidation(dataToValidate))
-      resultObject.close
-      new Base64().encodeAsString(baos.toByteArray());
+  def getQuoteBase64(): String = {
+    val dataToValidate = getQuote();
+    val baos = new ByteArrayOutputStream();
+    val resultObject = new ObjectOutputStream(baos)
+    resultObject.writeObject(new TPMValidation(dataToValidate))
+    resultObject.close
+    new Base64().encodeAsString(baos.toByteArray());
   }
-  
+
   def getQuote(): TcTssValidation = {
     val srk = TPMKeymanager.getSRK()
     val validationInput = new TcTssValidation();
@@ -97,13 +97,13 @@ object TPMSigning {
   }
 
   def verifyCertifiedNonce(dataToValidateBase64: String, certifyKey: TcIRsaKey): Boolean = {
-    val data =   new Base64().decode(dataToValidateBase64);
+    val data = new Base64().decode(dataToValidateBase64);
     val bais = new ByteArrayInputStream(data)
-    val in = new ObjectInputStream(bais);    
+    val in = new ObjectInputStream(bais);
     val dataToValidate = in.readObject().asInstanceOf[TPMValidation];
     verifyCertifiedNonce(dataToValidate.getAsTcTssValidation(), certifyKey)
   }
-  
+
   def verifyCertifiedNonce(dataToValidate: TcTssValidation, certifyKey: TcIRsaKey): Boolean = {
     val pubKey = new TcTpmPubkey(certifyKey.getPubKey());
     val pubKeyAsBlob = pubKey.getPubKey().getKey();
@@ -112,7 +112,6 @@ object TPMSigning {
     val certifiedData = new TcTpmCertifyInfo(plaindata);
     val certifiedDataPubKeyDigest = certifiedData.getPubKeyDigest().getDigest();
     pubKeyDigest == certifiedDataPubKeyDigest
-
   }
 
 }

@@ -8,7 +8,7 @@ case class TpmSigningKey() extends TpmAbstractKey {
   /*
    * the srk key should come from the instanciated keyManager 
    */
-  val keyType= TcTssConstants.TSS_KEY_TYPE_SIGNING;
-  val migrateableType= TcTssConstants.TSS_KEY_NOT_MIGRATABLE
+  val keyType = TcTssConstants.TSS_KEY_TYPE_SIGNING;
+  val migrateableType = TcTssConstants.TSS_KEY_NOT_MIGRATABLE
 
 }

@@ -16,7 +16,7 @@ abstract class BasicMessage(msg: String) {
   val now = new Date
   val df = getDateInstance(LONG, Locale.GERMANY)
   var payload = if (content(3).endsWith("\n")) content(3).substring(0, content(3).length() - 1) else content(3)
-  fields("date") = now.getTime() 
+  fields("date") = now.getTime()
   fields("state") = content(0);
   fields("type") = content(1);
   fields("mac") = content(2);
@@ -30,9 +30,9 @@ abstract class BasicMessage(msg: String) {
     //""+getClass().getSimpleName()+ " {state:" +state+", mac: "+ mac+", payload: "+payload+"}"
     var result = "" + getClass().getSimpleName() + "{ "
     for (field <- fields) {
-      result = " "+ result + field._1 + ": " + field._2.toString() + ", ";
+      result = " " + result + field._1 + ": " + field._2.toString() + ", ";
     }
-    result = result.substring(0, result.length()-2) + " }"
+    result = result.substring(0, result.length() - 2) + " }"
     result
   }
   def getResponseMessage(): Unicast

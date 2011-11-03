@@ -9,10 +9,10 @@ import net.ra23.batman.messages.types._;
 
 object DeviceWriterActor extends Actor {
   var files = List[String]();
-//  def lockFile(filename: String) {
-//    new File(filename + ".lock").createNewFile();
-//    TPMDebugger.log("Locking file[" + filename + "]", "debug");
-//  }
+  //  def lockFile(filename: String) {
+  //    new File(filename + ".lock").createNewFile();
+  //    TPMDebugger.log("Locking file[" + filename + "]", "debug");
+  //  }
   def unlockFile(filename: String) {
     new File(filename + ".lock").delete()
     TPMDebugger.log("Unlocking file[" + filename + "]", "debug");

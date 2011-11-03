@@ -15,15 +15,15 @@ object BroadcastActor extends Actor {
       }
       case msg: String if msg == "restart" => {
         restart
-      } 
+      }
       case _ => println(getClass().getSimpleName() + "error in react");
     }
   }
   def startBroadcast = {
     while (true) {
-    TPMDebugger.log(getClass().getSimpleName() + ": Broadcast", "debug");  
-    DeviceWriterActor ! Broadcast("01::c::"+TPMConfiguration.mac+"::"+TPMConfiguration.partialDHKey.toString)
-    Thread.sleep(1000);
+      TPMDebugger.log(getClass().getSimpleName() + ": Broadcast", "debug");
+      DeviceWriterActor ! Broadcast("01::c::" + TPMConfiguration.mac + "::" + TPMConfiguration.partialDHKey.toString)
+      Thread.sleep(1000);
     }
   }
   start
