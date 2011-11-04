@@ -52,8 +52,17 @@ object DeviceWriterActor extends Actor {
   }
   def act = loop {
     react {
-      case msg: Some[Unicast] => {
+      case msg: Option[Unicast] if msg.isInstanceOf[Unicast] => {
         unicast(msg.get)
+      }
+      case msg: List[Option[Unicast]] if msg.head==None => TPMDebugger.log(getClass().getSimpleName() + ": message was None so not sending message!", "debug");
+      case msg: List[Option[Unicast]] => {
+        TPMDebugger.log(getClass().getSimpleName() + ": sending ["+msg.length+"] messages", "debug")
+        println(getClass().getSimpleName() + ": sending ["+msg.length+"] messages")
+        for (m <- msg) {
+          if (m!=None)
+        	  unicast(m.get)
+        }
       }
       case msg: Option[Unicast] if (msg == None) => {
         TPMDebugger.log(getClass().getSimpleName() + ": message was None so not sending message!", "debug");
@@ -63,7 +72,8 @@ object DeviceWriterActor extends Actor {
       }
       case msg: Broadcast => broadcast(msg.msg)
       case msg: String => writePlain(msg)
-      case _ => println("error");
+      case msg: Option[Any] => println("error: "+msg)
+      case _ => println("UNKNOWN PACKET!");
     }
 
   }

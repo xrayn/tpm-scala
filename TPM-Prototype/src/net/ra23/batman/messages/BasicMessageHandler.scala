@@ -31,12 +31,11 @@ abstract class BasicMessageHandler(message: BasicMessage, as: String) {
       net.ra23.batman.ConnectionStorage.update(message.mac, message)
     }
   }
-  def getFollowupMessageAsClient(): Option[Unicast] = {
+  def getFollowupMessageAsClient(): List[Option[Unicast]] = {
     isValid match {
-      case iv: Boolean if iv => Some(message.getResponseMessage())
-      case iv: Boolean if !iv => None
+      case iv: Boolean if iv => message.getResponseMessage()
+      case iv: Boolean if !iv => List(None)
     }
-
   }
-  def getFollowupMessageAsServer(): Option[Unicast]
+  def getFollowupMessageAsServer(): List[Option[Unicast]]
 }

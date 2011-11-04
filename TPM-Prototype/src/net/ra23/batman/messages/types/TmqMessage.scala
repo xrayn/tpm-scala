@@ -3,6 +3,7 @@ package net.ra23.batman.messages.types
 import net.ra23.tpm.config._;
 import net.ra23.tpm.sign.TPMSigning;
 import net.ra23.batman.communication._;
+import net.ra23.helper.PayloadHelper;
 
 case class TmqMessage(msg: String) extends BasicMessage(msg) {
   val QUOTE = payload;
@@ -13,8 +14,12 @@ case class TmqMessage(msg: String) extends BasicMessage(msg) {
 
   payload = payload + ", " + SMLHASH
 
-  def getResponseMessage(): Unicast = {
-    Unicast(state + "::" + mac + "::" + state + "::s::" + TPMConfiguration.mac + "::" + TPMSigning.getQuoteBase64() + "::SERVER_SML_HASH")
+  def getResponseMessage(): List[Option[Unicast]] = {
+    var result =  List[Option[Unicast]]()
+    // tune 512 to a higher parameter, this is only for testing!
+    for (payload <- PayloadHelper.splitPayload(TPMSigning.getQuoteBase64() + "::CLIENT_SML_HASH", 512))
+      result=  Some(Unicast(state + "::" + mac + "::" + state + "f::s::" + TPMConfiguration.mac + "::" + payload))::result
+    result.reverse
   }
 
 }

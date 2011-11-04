@@ -35,5 +35,5 @@ abstract class BasicMessage(msg: String) {
     result = result.substring(0, result.length() - 2) + " }"
     result
   }
-  def getResponseMessage(): Unicast
+  def getResponseMessage(): List[Option[Unicast]]
 }

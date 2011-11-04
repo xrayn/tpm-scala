@@ -16,10 +16,10 @@ case class TmqMessageHandler(message: TmqMessage, as: String) extends BasicMessa
     isHandled
   }
 
-  def getFollowupMessageAsServer(): Option[Unicast] = {
+  def getFollowupMessageAsServer(): List[Option[Unicast]] = {
     isValid match {
-      case iv: Boolean if iv => Some(Unicast("03::" + message.mac + "::03::c::" + TPMConfiguration.mac + "::" + PayloadEncryptor.encryptBlowfish(TPMConfiguration.aesKey, message.mac)))
-      case iv: Boolean if !iv => None
+      case iv: Boolean if iv => List(Some(Unicast("03::" + message.mac + "::03::c::" + TPMConfiguration.mac + "::" + PayloadEncryptor.encryptBlowfish(TPMConfiguration.aesKey, message.mac))))
+      case iv: Boolean if !iv => List(None)
     }
 
   }

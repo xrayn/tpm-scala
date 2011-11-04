@@ -15,6 +15,7 @@ import net.ra23.batman.measurement._;
 import net.ra23.batman.encyrption._;
 import net.ra23.tpm.sign.TPMSigning;
 import net.ra23.tpm.base._;
+import net.ra23.helper.PayloadHelper;
 
 object Dispatchertest {
 
@@ -119,7 +120,12 @@ object Dispatchertest {
   def injectTmqMessage(): Unit = {
     println("[Testing tmq & tmd ......]")
     for ((mac, partialDhKey) <- net.ra23.batman.ConnectionStorage.keyDb) {
-      DeviceWriterActor ! Some(Unicast("02::" + mac + "::02::c::" + TPMConfiguration.mac + "::" + TPMSigning.getQuoteBase64() + "::CLIENT_SML_HASH"))
+      var result =  List[Option[Unicast]]()
+      // tune 512 to a higher parameter, this is only for testing!
+    for (payload <- PayloadHelper.splitPayload(TPMSigning.getQuoteBase64() + "::CLIENT_SML_HASH", 512))
+      result= Some(Unicast("02::" + mac + "::02f::c::" + TPMConfiguration.mac + "::"+payload)) :: result 
+      DeviceWriterActor ! result.reverse
+      //PayloadHelper.splitPayload(TPMSigning.getQuoteBase64() + "::CLIENT_SML_HASH", 10).foreach(payload => DeviceWriterActor ! Some(Unicast("02::" + mac + "::02::c::" + TPMConfiguration.mac + "::"+payload)))
     }
   }
   def printTable(): Unit = {

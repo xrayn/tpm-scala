@@ -15,8 +15,8 @@ case class TmdMessageHandler(message: TmdMessage, as: String) extends BasicMessa
     isHandled
   }
 
-  def getFollowupMessageAsServer(): Option[Unicast] = {
+  def getFollowupMessageAsServer(): List[Option[Unicast]] = {
     TPMDebugger.log("Protocol ended no follow up action needed", "debug")
-    None
+    List(None)
   }
 }
