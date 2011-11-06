@@ -31,10 +31,11 @@ object FragmentedMessageStorage {
     var result = false;
     if (storage.isDefinedAt(msg.packet_meta)) {
       if (storage(msg.packet_meta).length == msg.packet_max.toInt) {
+        result = true
+      } else {
         println(storage(msg.packet_meta).length)
         println(storage)
         println(msg.packet_max)
-        result = true
       }
     }
     println("isComplete ["+result+"]")
@@ -44,6 +45,7 @@ object FragmentedMessageStorage {
     
     val result = msg.state+"::"+msg.typ+"::"+msg.mac+"::"+PayloadHelper.mergePayload(for (message <- storage(msg.packet_meta).reverse) yield message.payload)
     println("merged -->["+result+"]")
+    storage.removeKey(msg.packet_meta)
     result
   }
   def isFragmentedMessage(msg: String): Boolean = {
