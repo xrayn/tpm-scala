@@ -28,7 +28,7 @@ abstract class TpmAbstractKey {
   val key: TcIRsaKey = TPMContext.context.createRsaKeyObject(TPMKeymanager.keySize | keyType | migrateableType)
   applyPolicies(key)
   val srk = TPMKeymanager.getSRK()
-  TPMDebugger.log("srk loaded:" + srk)
+  TPMDebugger.log("srk loaded:" + srk, "debug")
   key.createKey(srk, null)
   key.loadKey(srk)
 
@@ -40,9 +40,9 @@ abstract class TpmAbstractKey {
   val publicKey: TcIRsaKey = null
   def applyPolicies(key: TcIRsaKey) = {
     TPMPolicy.applyPolicy(TPMPolicy.keyUsgPolicy, key)
-    TPMDebugger.log("UsagePolicy applied");
+    TPMDebugger.log("UsagePolicy applied", "debug");
     TPMPolicy.applyPolicy(TPMPolicy.keyMigPolicy, key)
-    TPMDebugger.log("MigrationPolicy applied");
+    TPMDebugger.log("MigrationPolicy applied", "debug");
   }
 
   def getPublicKey() = {

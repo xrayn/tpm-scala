@@ -62,13 +62,13 @@ object TPM {
    * The TPM context.
    */
   TPMContext.context.connect();
-  TPMDebugger.log(TPMContext.context.isConnected());
+  TPMDebugger.log(TPMContext.context.isConnected(), "debug");
   /**
    * The TPM object.
    */
   val tpm = TPMContext.context.getTpmObject()
   if (tpm == null || TPMContext.context == null) {
-    TPMDebugger.log("tpm or  == null");
+    TPMDebugger.log("tpm or  == null", "debug");
   }
 
   var keyUuid: TcTssUuid = null;

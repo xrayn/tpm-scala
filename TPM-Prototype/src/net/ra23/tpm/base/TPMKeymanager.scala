@@ -33,9 +33,9 @@ object TPMKeymanager {
    * apply the policies 
    */
   TPMPolicy.applyPolicy(TPMPolicy.srkPolicy, srk_)
-  TPMDebugger.log("SRK Policy applied to srk")
+  TPMDebugger.log("SRK Policy applied to srk", "debug")
   TPMPolicy.applyPolicy(TPMPolicy.tpmPolicy, tpm)
-  TPMDebugger.log("SRK Policy applied to tpm")
+  TPMDebugger.log("SRK Policy applied to tpm", "debug")
 
   //  @deprecated def migrateKey(): TcIRsaKey = {
   //    // create the key of the migration authority
@@ -121,15 +121,15 @@ object TPMKeymanager {
     val fiStream = new FileInputStream(file);
 
     val length = file.length();
-    TPMDebugger.log("Reading file " + filename + " [" + length + "] Bytes")
+    TPMDebugger.log("Reading file " + filename + " [" + length + "] Bytes", "debug")
     val data = new Array[Byte](length.asInstanceOf[Int])
     fiStream.read(data);
     fiStream.close();
     TcBlobData.newByteArray(data)
   }
   def getSRK() = {
-    TPMDebugger.log("getting srk")
-    TPMDebugger.log(srk_)
+    TPMDebugger.log("getting srk", "debug")
+    TPMDebugger.log(srk_ , "debug")
     srk_
   }
   def getNewUuid(prefix: Int = 0): TcTssUuid = {

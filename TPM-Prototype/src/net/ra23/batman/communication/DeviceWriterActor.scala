@@ -58,7 +58,6 @@ object DeviceWriterActor extends Actor {
       case msg: List[Option[Unicast]] if msg.head==None => TPMDebugger.log(getClass().getSimpleName() + ": message was None so not sending message!", "debug");
       case msg: List[Option[Unicast]] => {
         TPMDebugger.log(getClass().getSimpleName() + ": sending ["+msg.length+"] messages", "debug")
-        println(getClass().getSimpleName() + ": sending ["+msg.length+"] messages")
         for (m <- msg) {
           if (m!=None)
         	  unicast(m.get)

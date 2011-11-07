@@ -123,7 +123,7 @@ object Dispatchertest {
     for ((mac, partialDhKey) <- net.ra23.batman.ConnectionStorage.keyDb) {
       var result =  List[Option[Unicast]]()
       // tune 512 to a higher parameter, this is only for testing!
-    for (payload <- PayloadHelper.splitPayload(TPMSigning.getQuoteBase64() + "::CLIENT_SML_HASH", 1280))
+    for (payload <- PayloadHelper.splitPayload(TPMSigning.getQuoteBase64() + "::CLIENT_SML_HASH", 128))
       result= Some(Unicast("02::" + mac + "::02f::c::" + TPMConfiguration.mac + "::"+payload)) :: result 
       DeviceWriterActor ! result.reverse
       //PayloadHelper.splitPayload(TPMSigning.getQuoteBase64() + "::CLIENT_SML_HASH", 10).foreach(payload => DeviceWriterActor ! Some(Unicast("02::" + mac + "::02::c::" + TPMConfiguration.mac + "::"+payload)))

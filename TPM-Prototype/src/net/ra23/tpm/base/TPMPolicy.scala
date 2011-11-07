@@ -37,7 +37,7 @@ object TPMPolicy {
    * read a config entry from the config object and set the password for the policy
    */
   private def applyConfigSecretToPolicy(policy: TcIPolicy, configEntry: String) {
-    TPMDebugger.log("pass: " + TPMConfiguration.get(configEntry));
+    TPMDebugger.log("pass: " + TPMConfiguration.get(configEntry), "debug");
     val secretAsBlob = TcBlobData.newString(TPMConfiguration.get(configEntry), false, TPMConfiguration.get("pwdEncoding"));
     policy.setSecret(TcTssConstants.TSS_SECRET_MODE_PLAIN, secretAsBlob);
   }

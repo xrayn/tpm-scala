@@ -50,7 +50,6 @@ object DeviceReaderActor extends Actor {
     loop {
       val message = read();
       if (FragmentedMessageStorage.isFragmentedMessage(message)) {
-    	  println("FOUND FRAGMENTED MESSAGE")
     	  FragmentedMessageStorage.insertAndMerge(message) match {
     	    case msg: Some[String] => MsgDispatcher ! msg.get
     	    case None => TPMDebugger.log("message not ready yet", "debug");

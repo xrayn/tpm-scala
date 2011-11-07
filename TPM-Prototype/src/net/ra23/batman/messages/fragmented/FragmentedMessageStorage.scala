@@ -2,6 +2,8 @@ package net.ra23.batman.messages.fragmented
 
 import scala.collection.mutable.Map
 import net.ra23.helper.PayloadHelper;
+import net.ra23.tpm.debugger.TPMDebugger;
+import scala.util.matching.Regex;
 
 object FragmentedMessageStorage {
   var storage = Map[String, List[FragmentedMessage]]()
@@ -16,8 +18,7 @@ object FragmentedMessageStorage {
     result
   }
   private def insert(msg: FragmentedMessage): Boolean = {
-    println("insert ---> " +msg)
-    println()
+    TPMDebugger.log(getClass().getSimpleName() + ":insert ["+msg+"]", "debug");
     
     if (storage.isDefinedAt(msg.packet_meta)) {
       storage(msg.packet_meta) = msg :: storage(msg.packet_meta)
@@ -33,25 +34,29 @@ object FragmentedMessageStorage {
       if (storage(msg.packet_meta).length == msg.packet_max.toInt) {
         result = true
       } else {
-        println(storage(msg.packet_meta).length)
-        println(storage)
-        println(msg.packet_max)
+        TPMDebugger.log(getClass().getSimpleName() + ":storage_len["+storage(msg.packet_meta).length+"]", "debug");
+        TPMDebugger.log(getClass().getSimpleName() + ":message_max["+msg.packet_max+"]", "debug");
+        TPMDebugger.log(getClass().getSimpleName() + ":storage ["+storage+"]", "debug");
       }
     }
-    println("isComplete ["+result+"]")
+    TPMDebugger.log(getClass().getSimpleName() + ":isComplete ["+result+"]", "debug");
     result
   }
   private def merge(msg: FragmentedMessage): String = {
     
     val result = msg.state+"::"+msg.typ+"::"+msg.mac+"::"+PayloadHelper.mergePayload(for (message <- storage(msg.packet_meta).reverse) yield message.payload)
-    println("merged -->["+result+"]")
+    TPMDebugger.log(getClass().getSimpleName() + ":merged -> ["+result+"]", "debug");
     storage.removeKey(msg.packet_meta)
     result
   }
   def isFragmentedMessage(msg: String): Boolean = {
-    val result = msg.startsWith("02f")
-    if (result) println(msg)
-    result
+    val expression = """\d\df::.*""".r
+    var res = false;
+    if (expression.findPrefixMatchOf(msg)!=None) { 
+      TPMDebugger.log(getClass().getSimpleName() + ":found fragmented message", "debug");
+      res = true;
+    }
+    res
   }
 
 }
