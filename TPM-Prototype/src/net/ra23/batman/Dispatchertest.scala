@@ -89,6 +89,12 @@ object Dispatchertest {
           case c: String if command == "c" => {
             initKernelModule("Change")
           }
+          case c: String if command == "connect" => {
+            connect();
+          }
+          case c: String if command == "s" => {
+            printStats();
+          }
           case c: String if command == "h" => {
             consoleHelp
           }
@@ -113,6 +119,8 @@ object Dispatchertest {
     println("[c] -> change dh key + aes key")
     println("[t] -> inject a tmq package (start protocol)")
     println("[p] -> show current state tables and keydb")
+    println("[s] -> show stat summary")
+    println("[connect] -> connect all unconnected nodes")
   }
   def exportPublicSrk() {
     println("[Exporting public SRK ......]")
@@ -121,13 +129,38 @@ object Dispatchertest {
   def injectTmqMessage(): Unit = {
     println("[Testing tmq & tmd ......]")
     for ((mac, partialDhKey) <- net.ra23.batman.ConnectionStorage.keyDb) {
-      var result =  List[Option[Unicast]]()
+      var result = List[Option[Unicast]]()
       // tune 512 to a higher parameter, this is only for testing!
-    for (payload <- PayloadHelper.splitPayload(TPMSigning.getQuoteBase64() + "::CLIENT_SML_HASH", 128))
-      result= Some(Unicast("02::" + mac + "::02f::c::" + TPMConfiguration.mac + "::"+payload)) :: result 
+      for (payload <- PayloadHelper.splitPayload(TPMSigning.getQuoteBase64() + "::CLIENT_SML_HASH", 128))
+        result = Some(Unicast("02::" + mac + "::02f::c::" + TPMConfiguration.mac + "::" + payload)) :: result
       DeviceWriterActor ! result.reverse
       //PayloadHelper.splitPayload(TPMSigning.getQuoteBase64() + "::CLIENT_SML_HASH", 10).foreach(payload => DeviceWriterActor ! Some(Unicast("02::" + mac + "::02::c::" + TPMConfiguration.mac + "::"+payload)))
     }
+  }
+  def connect(): Unit = {
+    var nodes = 0;
+    println("Connecting");
+    for (mac <- ConnectionStorage.getNotInState3()) {
+      nodes = nodes + 1;
+      var result = List[Option[Unicast]]()
+      val key = ConnectionStorage.getDhKey(mac);
+      if (key != None) {
+        print(".")
+        val partialDhKey = key.get;
+        for (payload <- PayloadHelper.splitPayload(TPMSigning.getQuoteBase64() + "::CLIENT_SML_HASH", 128))
+          result = Some(Unicast("02::" + mac + "::02f::c::" + TPMConfiguration.mac + "::" + payload)) :: result
+        DeviceWriterActor ! result.reverse
+      }
+    }
+    Thread.sleep(2000);
+    println("")
+    printStats()
+    println("")
+  }
+  def printStats() {
+    println("Known Nodes: [" + ConnectionStorage.keyDb.size + "]");
+    println("Unconnected Nodes: [" + ConnectionStorage.getNotInState3().length + "]");
+    println("Connected Nodes: [" + (ConnectionStorage.keyDb.size - ConnectionStorage.getNotInState3().length) + "]");
   }
   def printTable(): Unit = {
     println("State1")

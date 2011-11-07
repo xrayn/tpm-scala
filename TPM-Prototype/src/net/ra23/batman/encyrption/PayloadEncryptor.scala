@@ -9,7 +9,7 @@ object PayloadEncryptor {
     DiffieHellmanKeyExchange.encryptBlowfish(plaintext, ConnectionStorage.getPeerKey(key))
   }
 
-  def decryptBlowfish(ciphertext: String, key: String): String = {
+  def decryptBlowfish(ciphertext: String, key: String): Option[String] = {
     DiffieHellmanKeyExchange.decryptBlowfish(ciphertext, ConnectionStorage.getPeerKey(key))
   }
 

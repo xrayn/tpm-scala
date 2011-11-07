@@ -100,8 +100,16 @@ object TPMSigning {
     val data = new Base64().decode(dataToValidateBase64);
     val bais = new ByteArrayInputStream(data)
     val in = new ObjectInputStream(bais);
-    val dataToValidate = in.readObject().asInstanceOf[TPMValidation];
-    verifyCertifiedNonce(dataToValidate.getAsTcTssValidation(), certifyKey)
+    try {
+      val dataToValidate = in.readObject().asInstanceOf[TPMValidation];
+      verifyCertifiedNonce(dataToValidate.getAsTcTssValidation(), certifyKey)
+    } catch {
+      case e: Exception => {
+        TPMDebugger.log(getClass().getSimpleName() + "Something went wrong while reading utf8 string! Handling message as invalid and continue. Exception info follows:");
+        TPMDebugger.log(getClass().getSimpleName() + e.getStackTraceString);
+        false
+      }
+    }
   }
 
   def verifyCertifiedNonce(dataToValidate: TcTssValidation, certifyKey: TcIRsaKey): Boolean = {

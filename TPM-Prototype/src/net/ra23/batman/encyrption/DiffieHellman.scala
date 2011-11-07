@@ -4,12 +4,13 @@
  */
 package net.ra23.batman.encyrption
 
-import scala.util.Random;
-import javax.crypto.Cipher;
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
+import scala.util.Random
+import javax.crypto.Cipher
+import javax.crypto.KeyGenerator
+import javax.crypto.SecretKey
+import javax.crypto.spec.SecretKeySpec
 import org.apache.commons.codec.binary.Base64;
+
 
 object DiffieHellmanKeyExchange {
   /*
@@ -41,19 +42,23 @@ object DiffieHellmanKeyExchange {
       }
     }
   }
-  def decryptBlowfish(aesKey: String, peerPubKey: Option[String]): String = {
+  def decryptBlowfish(aesKey: String, peerPubKey: Option[String]): Option[String] = {
     setPeerPubKey(BigInt(peerPubKey.get))
     val sharedKey = getSharedKey().toString().getBytes()
     peerPubKey match {
-      case None => { "no key" }
+      case None => { None }
       case key: Some[String] => {
         val myKeySpec = new SecretKeySpec(sharedKey, "Blowfish");
         val cipher = Cipher.getInstance("Blowfish/ECB/PKCS5Padding");
         cipher.init(Cipher.DECRYPT_MODE, myKeySpec);
         val crypted = new Base64().decode(aesKey);
         var plaintext = ""
-        cipher.doFinal(crypted).foreach(c => { plaintext = plaintext + c.toChar });
-        plaintext
+        try {
+          cipher.doFinal(crypted).foreach(c => { plaintext = plaintext + c.toChar });
+          Some(plaintext)
+        } catch {
+          case e: Exception => e.printStackTrace(); None
+        }
       }
     }
   }

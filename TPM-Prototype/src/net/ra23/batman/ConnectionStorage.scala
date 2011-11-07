@@ -89,4 +89,17 @@ object ConnectionStorage {
   def getPeerKey(mac: String): Option[String] = {
     keyDb.get(mac);
   }
+  def isInState3(mac: String): Boolean  = {
+    state3.isDefinedAt(mac);
+  }
+  def getNotInState3(): List[String] = {
+    var result= List[String]() 
+    for ((mac,key) <- keyDb) {
+      if (!isInState3(mac)) result= mac::result
+    }
+    result
+  }
+  def getDhKey(mac: String): Option[String] = {
+    keyDb.get(mac)
+  }
 }
