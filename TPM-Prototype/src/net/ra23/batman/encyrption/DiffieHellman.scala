@@ -10,7 +10,7 @@ import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.spec.SecretKeySpec
 import org.apache.commons.codec.binary.Base64;
-
+import scala.util.matching.Regex;
 
 object DiffieHellmanKeyExchange {
   /*
@@ -24,40 +24,64 @@ object DiffieHellmanKeyExchange {
   val g = 5
 
   val keyCenter = new DiffieHellman(g, p);
-
+  var validator = """\d+""".r;
   newSecretKey()
 
-  def encryptBlowfish(aesKey: String, peerPubKey: Option[String]): String = {
-    setPeerPubKey(BigInt(peerPubKey.get))
-    val sharedKey = getSharedKey().toString().getBytes()
-    peerPubKey match {
-      case None => { "no key" }
-      case key: Some[String] => {
-        val myKeySpec = new SecretKeySpec(sharedKey, "Blowfish");
-        val cipher = Cipher.getInstance("Blowfish/ECB/PKCS5Padding");
-        cipher.init(Cipher.ENCRYPT_MODE, myKeySpec);
-        val ciphertext = cipher.doFinal(aesKey.getBytes())
-        val cipherout = new Base64().encodeAsString(ciphertext);
-        cipherout
-      }
-    }
-  }
-  def decryptBlowfish(aesKey: String, peerPubKey: Option[String]): Option[String] = {
-    setPeerPubKey(BigInt(peerPubKey.get))
-    val sharedKey = getSharedKey().toString().getBytes()
+  def encryptBlowfish(aesKey: String, peerPubKey: Option[String]): Option[String] = {
+
     peerPubKey match {
       case None => { None }
       case key: Some[String] => {
-        val myKeySpec = new SecretKeySpec(sharedKey, "Blowfish");
-        val cipher = Cipher.getInstance("Blowfish/ECB/PKCS5Padding");
-        cipher.init(Cipher.DECRYPT_MODE, myKeySpec);
-        val crypted = new Base64().decode(aesKey);
-        var plaintext = ""
-        try {
-          cipher.doFinal(crypted).foreach(c => { plaintext = plaintext + c.toChar });
-          Some(plaintext)
-        } catch {
-          case e: Exception => e.printStackTrace(); None
+        if (validator.findFirstIn(peerPubKey.get) != None) {
+          setPeerPubKey(BigInt(peerPubKey.get))
+          val sharedKey = getSharedKey().toString().getBytes()
+          val myKeySpec = new SecretKeySpec(sharedKey, "Blowfish");
+          val cipher = Cipher.getInstance("Blowfish/ECB/PKCS5Padding");
+          cipher.init(Cipher.ENCRYPT_MODE, myKeySpec);
+          val ciphertext = cipher.doFinal(aesKey.getBytes())
+          val cipherout = new Base64().encodeAsString(ciphertext);
+          Some(cipherout)
+        } else {
+          None
+        }
+      }
+    }
+  }
+
+  def decryptBlowfish(aesKey: String, peerPubKey: Option[String]): Option[String] = {
+
+    peerPubKey match {
+      case None => { None }
+      case key: Some[String] => {
+        if (validator.findFirstIn(peerPubKey.get) != None) {
+          setPeerPubKey(BigInt(peerPubKey.get))
+
+          setPeerPubKey(BigInt(peerPubKey.get))
+          val sharedKey = getSharedKey().toString().getBytes()
+          val myKeySpec = new SecretKeySpec(sharedKey, "Blowfish");
+          val cipher = Cipher.getInstance("Blowfish/ECB/PKCS5Padding");
+          cipher.init(Cipher.DECRYPT_MODE, myKeySpec);
+          val crypted = new Base64().decode(aesKey);
+          var plaintext = ""
+          try {
+            val cipherByte = cipher.doFinal(crypted)
+            cipherByte.foreach(c => { plaintext = plaintext + c.toChar });
+            println("PEER PUB KEY IS [" + peerPubKey.get + "]");
+            println("  BASE64 AES IS [" + aesKey + "]")
+            println("  PLAINTEXT  IS [" + plaintext + "]")
+            println("  SHARED KEY IS [" + getSharedKey().toString() + "]")
+            Some(plaintext)
+          } catch {
+            case e: Exception => {
+              println("PEER PUB KEY IS [" + peerPubKey.get + "]");
+              println("  BASE64 AES IS [" + aesKey + "]")
+              println("  PLAINTEXT  IS [" + plaintext + "]")
+              println("  SHARED KEY IS [" + getSharedKey().toString() + "]")
+              e.printStackTrace(); None
+            }
+          }
+        } else {
+          None
         }
       }
     }

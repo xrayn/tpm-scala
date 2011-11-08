@@ -39,6 +39,18 @@ object ConnectionStorage {
           result = false;
         }
       }
+      case msg: TmcMessage if (!inDatabase(db("state1"), mac) && inDatabase(db("state2"), mac) && !inDatabase(db("state3"), mac)) => {
+        // do this only if partial DH Key changed
+        if (keyDb(mac) != msg.partialDHKey) {
+          db("state1") += (mac -> msg);
+          db("state2") -= (mac);
+          keyDb(mac) = msg.partialDHKey;
+          result = true;
+        } else {
+          TPMDebugger.log(getClass().getSimpleName() + ": Ignoring message, DH not changed!", "debug");
+          result = false;
+        }
+      }
       case msg: TmqMessage if (inDatabase(db("state1"), mac) && !inDatabase(db("state2"), mac) && !inDatabase(db("state3"), mac)) => db("state2") += (mac -> msg); db("state1") -= (mac); result = true;
       case msg: TmqMessage if (!inDatabase(db("state1"), mac) && inDatabase(db("state2"), mac) && !inDatabase(db("state3"), mac)) => db("state2") -= (mac); db("state2") += (mac -> msg); result = true; //refresh
       case msg: TmdMessage if (!inDatabase(db("state1"), mac) && inDatabase(db("state2"), mac) && !inDatabase(db("state3"), mac)) => db("state3") += (mac -> msg); db("state2") -= (mac); result = true;

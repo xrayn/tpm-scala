@@ -31,15 +31,16 @@ object Dispatchertest {
     TPMConfiguration.mac = localMacAddress
     val in = args(2)
     val out = args.tail.tail.tail.toList
-    DeviceReaderActor(in);
-    DeviceWriterActor(out)
+    
     TPMDebugger.log("infile loaded");
     Thread.sleep(500)
     TPMDebugger.log("initialize tpm");
     /* deactivated until tpm device available at clients! */
     TPM.init();
     TPMDebugger.log("Sleeping 5s");
-    Thread.sleep(100);
+    Thread.sleep(5000);
+    DeviceReaderActor(in);
+    DeviceWriterActor(out)
     DeviceReaderActor ! "START"
     println(TPMConfiguration.partialDHKey.toString)
   }
@@ -92,6 +93,12 @@ object Dispatchertest {
           case c: String if command == "connect" => {
             connect();
           }
+          case c: String if command.startsWith("autoconnect") => {
+            val cmd = command.replace("autoconnect","").trim();
+            println(cmd);
+            AutoconnectActor ! cmd
+          }
+          
           case c: String if command == "s" => {
             printStats();
           }
@@ -121,6 +128,7 @@ object Dispatchertest {
     println("[p] -> show current state tables and keydb")
     println("[s] -> show stat summary")
     println("[connect] -> connect all unconnected nodes")
+    println("[autoconnect (start|stop|restart)] -> start auto connection actor")
   }
   def exportPublicSrk() {
     println("[Exporting public SRK ......]")
@@ -131,7 +139,7 @@ object Dispatchertest {
     for ((mac, partialDhKey) <- net.ra23.batman.ConnectionStorage.keyDb) {
       var result = List[Option[Unicast]]()
       // tune 512 to a higher parameter, this is only for testing!
-      for (payload <- PayloadHelper.splitPayload(TPMSigning.getQuoteBase64() + "::CLIENT_SML_HASH", 128))
+      for (payload <- PayloadHelper.splitPayload(TPMSigning.getQuoteBase64() + "::CLIENT_SML_HASH", TPMConfiguration.tmqSplitSize))
         result = Some(Unicast("02::" + mac + "::02f::c::" + TPMConfiguration.mac + "::" + payload)) :: result
       DeviceWriterActor ! result.reverse
       //PayloadHelper.splitPayload(TPMSigning.getQuoteBase64() + "::CLIENT_SML_HASH", 10).foreach(payload => DeviceWriterActor ! Some(Unicast("02::" + mac + "::02::c::" + TPMConfiguration.mac + "::"+payload)))
@@ -147,7 +155,7 @@ object Dispatchertest {
       if (key != None) {
         print(".")
         val partialDhKey = key.get;
-        for (payload <- PayloadHelper.splitPayload(TPMSigning.getQuoteBase64() + "::CLIENT_SML_HASH", 128))
+        for (payload <- PayloadHelper.splitPayload(TPMSigning.getQuoteBase64() + "::CLIENT_SML_HASH", TPMConfiguration.tmqSplitSize))
           result = Some(Unicast("02::" + mac + "::02f::c::" + TPMConfiguration.mac + "::" + payload)) :: result
         DeviceWriterActor ! result.reverse
       }

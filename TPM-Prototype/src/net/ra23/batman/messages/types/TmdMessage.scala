@@ -9,6 +9,11 @@ case class TmdMessage(msg: String) extends BasicMessage(msg) {
 
   fields("encryptionKey") = encryptionKey;
   def getResponseMessage(): List[Option[Unicast]] = {
-    List(Some(Unicast(state + "::" ++ mac + "::" + state + "::s::" + TPMConfiguration.mac + "::" + PayloadEncryptor.encryptBlowfish(TPMConfiguration.aesKey, mac))))
+    val encryptedBlowfish = PayloadEncryptor.encryptBlowfish(TPMConfiguration.aesKey, mac);
+    if (encryptedBlowfish != None) {
+    List(Some(Unicast(state + "::" ++ mac + "::" + state + "::s::" + TPMConfiguration.mac + "::" + encryptedBlowfish.get )))
+    } else {
+      List(None);
+    }
   }
 }

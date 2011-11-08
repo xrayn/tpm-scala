@@ -17,7 +17,7 @@ case class TmqMessage(msg: String) extends BasicMessage(msg) {
   def getResponseMessage(): List[Option[Unicast]] = {
     var result =  List[Option[Unicast]]()
     // tune 512 to a higher parameter, this is only for testing!
-    for (payload <- PayloadHelper.splitPayload(TPMSigning.getQuoteBase64() + "::CLIENT_SML_HASH", 1280))
+    for (payload <- PayloadHelper.splitPayload(TPMSigning.getQuoteBase64() + "::CLIENT_SML_HASH", TPMConfiguration.tmqSplitSize))
       result=  Some(Unicast(state + "::" + mac + "::" + state + "f::s::" + TPMConfiguration.mac + "::" + payload))::result
     result.reverse
   }

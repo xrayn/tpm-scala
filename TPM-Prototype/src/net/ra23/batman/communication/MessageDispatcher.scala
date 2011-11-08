@@ -43,14 +43,14 @@ object MsgDispatcher extends Actor {
           }
           // inject the received aes key!
           val aes_key = DiffieHellmanKeyExchange.decryptBlowfish(msg.payload, ConnectionStorage.getPeerKey(msg.mac));
-          if (aes_key!=None) {
-        	  DeviceWriterActor ! "00::insert_aes_key::" + msg.mac + "::" +aes_key
+          if (aes_key != None) {
+            DeviceWriterActor ! "00::insert_aes_key::" + msg.mac + "::" + aes_key.get
           } else {
             // was not decryptable, remove from state2 db.
             ConnectionStorage.state2.remove(msg.mac);
-            TPMDebugger.log(getClass().getSimpleName() + ConnectionStorage.asList("1"), "debug")
-            TPMDebugger.log(getClass().getSimpleName() + ConnectionStorage.asList("2"), "debug")
-            TPMDebugger.log(getClass().getSimpleName() + ConnectionStorage.asList("3"), "debug")
+            TPMDebugger.log(getClass().getSimpleName() + ConnectionStorage.asList("state1"), "debug")
+            TPMDebugger.log(getClass().getSimpleName() + ConnectionStorage.asList("state2"), "debug")
+            TPMDebugger.log(getClass().getSimpleName() + ConnectionStorage.asList("state3"), "debug")
             TPMDebugger.log(getClass().getSimpleName() + ": message was not decryptable, removed from ConnectionStorage!", "debug")
           }
         }
@@ -89,7 +89,12 @@ object MsgDispatcher extends Actor {
     react {
       case msg: String =>
         {
-          handleMessage(MessageFactory(msg))
+          val message = MessageFactory(msg);
+          if (message != None) {
+            handleMessage(message.get)
+          } else {
+            TPMDebugger.log("Received invalid message. Was ["+msg+"]")
+          }
         };
       case _ => TPMDebugger.log("I have no idea what I just got.")
     }

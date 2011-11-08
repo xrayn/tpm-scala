@@ -1,6 +1,10 @@
 package net.ra23.batman.communication
 
 import scala.actors.Actor
+import java.io._
+import java.nio._
+import java.nio.charset._
+import java.util._
 import net.ra23.batman.messages.fragmented._
 import scala.actors.Actor._
 import java.io._
@@ -9,6 +13,7 @@ import net.ra23.batman.communication._
 import java.lang.ProcessBuilder
 import scala.sys.process.Process
 import net.ra23.batman.messages.types.BasicMessage
+import scala.tools.nsc.dependencies.Files
 
 object DeviceReaderActor extends Actor {
   //val file = "/dev/mcom"
@@ -47,14 +52,16 @@ object DeviceReaderActor extends Actor {
   }
   def act = loop {
     TPMDebugger.log("Starting device reader @[" + file + "]");
+    // clean up
+    
     loop {
       val message = read();
       if (FragmentedMessageStorage.isFragmentedMessage(message)) {
-    	  FragmentedMessageStorage.insertAndMerge(message) match {
-    	    case msg: Some[String] => MsgDispatcher ! msg.get
-    	    case None => TPMDebugger.log("message not ready yet", "debug");
-    	    case _ =>
-    	  }
+        FragmentedMessageStorage.insertAndMerge(message) match {
+          case msg: Some[String] => MsgDispatcher ! msg.get
+          case None => TPMDebugger.log("message not ready yet", "debug");
+          case _ =>
+        }
       } else {
         MsgDispatcher ! message
       }

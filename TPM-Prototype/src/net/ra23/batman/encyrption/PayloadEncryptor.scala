@@ -5,7 +5,7 @@ import net.ra23.tpm.config._;
 
 object PayloadEncryptor {
 
-  def encryptBlowfish(plaintext: String, key: String): String = {
+  def encryptBlowfish(plaintext: String, key: String): Option[String] = {
     DiffieHellmanKeyExchange.encryptBlowfish(plaintext, ConnectionStorage.getPeerKey(key))
   }
 

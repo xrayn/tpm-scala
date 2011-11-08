@@ -46,6 +46,7 @@ object TPMConfiguration {
   var partialDHKey = scala.math.abs(random.nextLong());
   var mac = "";
   var aesKey = ""
+  var tmqSplitSize = 512;
   //println(fromXML(atest))
 
   //

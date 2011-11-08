@@ -18,7 +18,14 @@ case class TmqMessageHandler(message: TmqMessage, as: String) extends BasicMessa
 
   def getFollowupMessageAsServer(): List[Option[Unicast]] = {
     isValid match {
-      case iv: Boolean if iv => List(Some(Unicast("03::" + message.mac + "::03::c::" + TPMConfiguration.mac + "::" + PayloadEncryptor.encryptBlowfish(TPMConfiguration.aesKey, message.mac))))
+      case iv: Boolean if iv => {
+        val encryptedBlowfish = PayloadEncryptor.encryptBlowfish(TPMConfiguration.aesKey, message.mac);
+        if (encryptedBlowfish != None) {
+          List(Some(Unicast("03::" + message.mac + "::03::c::" + TPMConfiguration.mac + "::" + encryptedBlowfish.get)))
+        } else {
+          List(None);
+        }
+      }
       case iv: Boolean if !iv => List(None)
     }
 
