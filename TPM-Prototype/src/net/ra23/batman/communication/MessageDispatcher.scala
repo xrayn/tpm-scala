@@ -54,9 +54,6 @@ object MsgDispatcher extends Actor {
             TPMDebugger.log(getClass().getSimpleName() + ": message was not decryptable, removed from ConnectionStorage!", "debug")
           }
         }
-        if (messageHandler.isHandled == true) {
-
-        }
     }
   }
   /**

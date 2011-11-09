@@ -14,6 +14,7 @@ import java.lang.ProcessBuilder
 import scala.sys.process.Process
 import net.ra23.batman.messages.types.BasicMessage
 import scala.tools.nsc.dependencies.Files
+import java.nio.channels._
 
 object DeviceReaderActor extends Actor {
   //val file = "/dev/mcom"
@@ -53,7 +54,7 @@ object DeviceReaderActor extends Actor {
   def act = loop {
     TPMDebugger.log("Starting device reader @[" + file + "]");
     // clean up
-    
+
     loop {
       val message = read();
       if (FragmentedMessageStorage.isFragmentedMessage(message)) {
@@ -68,9 +69,24 @@ object DeviceReaderActor extends Actor {
     }
   }
   def apply(filename: String) {
-    //createListenerFile(filename);
+    //createListenerFile(filename);    
     file = filename;
+    var run = true
+    val test = new Array[Byte](1000);
+    var count =0;
+    device = new RandomAccessFile(file, "r");
+    while (run) {
+      val time = System.nanoTime();
+      device.read(test)
+      count = count +1
+      if ((System.nanoTime() - time)>100000000) {
+        run = false;
+      }
+    }
+    device.close
+    println("Skipped ["+count+"] lines")
     start()
+
   }
   def createListenerFile(filename: String) {
     if (new File(filename).exists()) {
