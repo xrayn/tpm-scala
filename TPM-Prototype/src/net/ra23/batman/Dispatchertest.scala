@@ -131,6 +131,7 @@ object Dispatchertest {
     println("[t] -> inject a tmq package (start protocol)")
     println("[p] -> show current state tables and keydb")
     println("[s] -> show stat summary")
+    println("[q] -> exit client")
     println("[connect] -> connect all unconnected nodes")
     println("[autoconnect (start|stop|restart)] -> start auto connection actor")
   }
