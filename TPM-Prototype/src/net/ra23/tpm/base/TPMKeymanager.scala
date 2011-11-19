@@ -109,12 +109,21 @@ object TPMKeymanager {
     val file = new File(filename);
     val foStream = new FileOutputStream(file);
     val oStream = new ByteArrayOutputStream();
-    val bs = aKey.getPubKey().asByteArray()
-    //Writes a byte to the byte array output stream.
-    oStream.write(bs);
-    oStream.writeTo(foStream);
-    TPMDebugger.log("Key written to the file " + filename);
-    foStream.close();
+    try {
+      //println("key is [" + aKey.getPubKey().toHexStringNoWrap() + "]")
+      val bs = aKey.getPubKey().asByteArray()
+
+      //Writes a byte to the byte array output stream.
+      oStream.write(bs);
+      oStream.writeTo(foStream);
+      TPMDebugger.log("Key written to the file " + filename);
+    } catch {
+      case e: Exception => println("srk pubkey could not be exported"); e.printStackTrace();
+
+    } finally {
+      foStream.close();
+    }
+
   }
   def importPublicKey(filename: String): TcBlobData = {
     val file = new File(filename);
@@ -129,7 +138,7 @@ object TPMKeymanager {
   }
   def getSRK() = {
     TPMDebugger.log("getting srk", "debug")
-    TPMDebugger.log(srk_ , "debug")
+    TPMDebugger.log(srk_, "debug")
     srk_
   }
   def getNewUuid(prefix: Int = 0): TcTssUuid = {

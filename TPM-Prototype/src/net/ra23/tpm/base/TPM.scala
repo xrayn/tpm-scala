@@ -51,7 +51,7 @@ import net.ra23.tpm.crypt._;
 import net.ra23.tpm.debugger._;
 
 object TPM {
-  val config = TPMConfiguration.fromXmlFile("/tmp/config.xml")
+	
   var key: TcIRsaKey = null;
   //val tcs_ = new TcTcsBindingLocal()
   val TPM_MAN_ETHZ: TcBlobData = TcBlobData.newStringASCII("ETHZ")

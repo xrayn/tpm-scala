@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<config>
+      <keyManager>
+        <tpmPassword>12345</tpmPassword>
+        <srkPassword>12345</srkPassword>
+        <keyPassword>keyPwd</keyPassword>
+        <pwdEncoding>UTF-16LE</pwdEncoding>
+      </keyManager>
+	  <general>
+		 <networkInterface>eth0</networkInterface>
+		 <kernelCommDeviceReader>/dev/mcom</kernelCommDeviceReader>
+		  <kernelCommDeviceWriter>/dev/mcom</kernelCommDeviceWriter>
+		 <debugLogFile>/tmp/client1.log</debugLogFile>
+		 <measurementLogFile>/tmp/measurement.log</measurementLogFile>
+		 <daemonMode>0</daemonMode>
+	</general>
+    </config>

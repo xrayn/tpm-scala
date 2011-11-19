@@ -1,6 +1,7 @@
 package net.ra23.tpm.config
 
 import scala.collection.mutable._;
+import net.ra23.tpm.debugger._;
 
 object TPMConfiguration {
   var myMap = Map.empty[String, String];
@@ -12,6 +13,14 @@ object TPMConfiguration {
         <keyPassword>keyPwd</keyPassword>
         <pwdEncoding>UTF-16LE</pwdEncoding>
       </keyManager>
+	  <general>
+		 <networkInterface>eth0</networkInterface>
+		 <kernelCommDeviceReader>/dev/mcom</kernelCommDeviceReader>
+		  <kernelCommDeviceWriter>/dev/mcom</kernelCommDeviceWriter>
+		 <debugLogFile>/tmp/client1.log</debugLogFile>
+		 <measurementLogFile>/tmp/measurement.log</measurementLogFile>
+		 <daemonMode>0</daemonMode>
+	</general>
     </config>
   def fromXML(node: scala.xml.Node) = {
     val trimmedNode = scala.xml.Utility.trim(node);
@@ -24,11 +33,23 @@ object TPMConfiguration {
           }
         }
     }
+    trimmedNode \\ "general" map {
+      keyManagerNode =>
+        {
+          keyManagerNode.child map {
+            configNode =>
+              myMap(configNode.label) = configNode.text
+          }
+        }
+    }
   }
   def fromXmlFile(filename: String) = {
     try fromXML(scala.xml.XML.load(filename))
     catch {
-      case e: java.io.FileNotFoundException => fromXML(default)
+      case e: java.io.FileNotFoundException => {
+        TPMDebugger.log("File ["+filename+"] not found, loading default");
+        fromXML(default)
+      }
     }
     this
   }
@@ -47,8 +68,4 @@ object TPMConfiguration {
   var mac = "";
   var aesKey = ""
   var tmqSplitSize = 512;
-  //println(fromXML(atest))
-
-  //
-  //println(fromXmlFile("/tmp/config.xml"))
 }

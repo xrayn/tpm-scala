@@ -20,17 +20,21 @@ import net.ra23.helper.PayloadHelper;
 object Dispatchertest {
 
   val device = DeviceReaderActor.device
-
+  val baseDir = new File("").getAbsolutePath();
   def init(args: Array[String]) = {
-    val localNetworkInterface = NetworkInterface.getByName("eth0");
+    val configfile = baseDir+"/etc/"+args(0);
+    TPMDebugger.log("Loading config from "+ configfile);
+    TPMConfiguration.fromXmlFile(configfile)
+    println(TPMConfiguration);
+    val localNetworkInterface = NetworkInterface.getByName(TPMConfiguration.get("networkInterface"));
     val localMacAddress = localNetworkInterface.getHardwareAddress.toList.map(b => String.format("%02x", b.asInstanceOf[AnyRef])).mkString(":")
-    MessageMeasurer.setFile("/tmp/measurement.log")
+    MessageMeasurer.setFile(TPMConfiguration.get("measurementLogFile"))
     MessageMeasurer.measure(null, "startup");
-    TPMDebugger.setFile(args(1))
+    TPMDebugger.setFile(TPMConfiguration.get("debugLogFile"))
     TPMDebugger.log("Start")
     TPMConfiguration.mac = localMacAddress
-    val in = args(2)
-    val out = args.tail.tail.tail.toList
+    val in = TPMConfiguration.get("kernelCommDeviceReader");
+    val out = List(TPMConfiguration.get("kernelCommDeviceWriter"));
     
     TPMDebugger.log("infile loaded");
     Thread.sleep(500)
@@ -132,7 +136,7 @@ object Dispatchertest {
   }
   def exportPublicSrk() {
     println("[Exporting public SRK ......]")
-    TPMKeymanager.exportPublicKey(TPMKeymanager.getSRK(), "/root/batman/srk_keys/" + TPMConfiguration.mac + ".key")
+    TPMKeymanager.exportPublicKey(TPMKeymanager.getSRK(), baseDir +"/srk_keys/"+ TPMConfiguration.mac + ".key")
   }
   def injectTmqMessage(): Unit = {
     println("[Testing tmq & tmd ......]")
