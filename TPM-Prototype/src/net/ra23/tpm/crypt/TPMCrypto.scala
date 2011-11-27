@@ -74,7 +74,7 @@ object TPMCrypto {
     /*
      * a temporary empty key is needed, which gets the public part injected
      */
-    encrypt(TPMKeymanager.createRsaKeyObject(encKeyPublicPart), plaintext)
+    encrypt(TPMKeymanager.createRsaKeyObject(Some(encKeyPublicPart)).get, plaintext)
   }
 
   protected def encrypt(encKey: TcIRsaKey, plaintext: String): TcIEncData = {

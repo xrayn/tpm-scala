@@ -12,6 +12,7 @@ object TPMConfiguration {
         <srkPassword>12345</srkPassword>
         <keyPassword>keyPwd</keyPassword>
         <pwdEncoding>UTF-16LE</pwdEncoding>
+		<signingKeyPath>/tmp/</signingKeyPath>
       </keyManager>
 	  <general>
 		 <networkInterface>eth0</networkInterface>

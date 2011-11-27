@@ -50,6 +50,7 @@ import net.ra23.tpm.base._;
 import net.ra23.tpm.context._;
 import net.ra23.tpm.crypt._;
 import net.ra23.tpm.debugger._;
+import net.ra23.tpm.config._;
 import iaik.tc.tss.api.structs.tpm._;
 import java.security.Signature;
 import net.ra23.tpm.validate.TPMValidation;
@@ -61,14 +62,16 @@ class TPMSigning {
 object TPMSigning {
   val tpm = TPM
 
-  // is later only visible in getCertifiedKey
-  val certifyKey = TpmSigningKey()
-  //val certifyKey2 = TpmTestKey();
   def test() = {
-    val foo = new TpmSigningKey;
-
-    println(verifyCertifiedNonce(getQuoteBase64(), TPMKeymanager.createRsaKeyObject(TPMKeymanager.importPublicKey("/tmp/key.pub"))))
-    //println(verifyCertifiedNonce(getQuote(), certifyKey))
+    println(verifyCertifiedNonce(getQuoteBase64(), TPMKeymanager.createRsaKeyObject(TPMKeymanager.importPublicKey("/tmp/bc:ae:c5:2a:90:c2.key.pub"))))
+  }
+  def selfTest() {
+    if (!verifyCertifiedNonce(getQuoteBase64(), TPMKeymanager.createRsaKeyObject(TPMKeymanager.importPublicKey(TPMConfiguration.get("signingKeyPath") + TPMConfiguration.mac + ".key.pub")))) {
+      println("Signing selftest failed!");
+      println("Most likely pubkey does not match private key=>")
+      println("Delete private key [" + TPMConfiguration.get("signingKeyPath") + TPMConfiguration.mac + ".key] to regenerate both keys");
+      System.exit(-1)
+    }
   }
   def getQuoteBase64(): String = {
     val dataToValidate = getQuote();
@@ -80,23 +83,17 @@ object TPMSigning {
   }
 
   def getQuote(): TcTssValidation = {
-    val srk = TPMKeymanager.getSRK()
     val validationInput = new TcTssValidation();
     val nonceByteArray = Array[Byte](0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4A, 0x4B, 0x4C, 0x4D, 0x4E, 0x4F, 0x50, 0x51, 0x52, 0x53, 0x54)
-
     val nonce = TcBlobData.newByteArray(nonceByteArray);
     validationInput.setExternalData(nonce);
-    //println(validationInput.getExternalData().toStringASCII())
-
     val pcrComp: TcIPcrComposite = TPMContext.context.createPcrCompositeObject(TcTssConstants.TSS_PCRS_STRUCT_INFO);
     pcrComp.selectPcrIndex(1);
     pcrComp.selectPcrIndex(10);
-    val result = TPMContext.context.getTpmObject.quote(certifyKey.getKey(), pcrComp, null)
-    val dataToValidate = srk.certifyKey(certifyKey.getKey, result);
-    dataToValidate
+    val result = TPMContext.context.getTpmObject.quote(TPMKeymanager.signingKey, pcrComp, null)
+    result
   }
-
-  def verifyCertifiedNonce(dataToValidateBase64: String, certifyKey: TcIRsaKey): Boolean = {
+  def verifyCertifiedNonce(dataToValidateBase64: String, certifyKey: Option[TcIRsaKey]): Boolean = {
     val data = new Base64().decode(dataToValidateBase64);
     val bais = new ByteArrayInputStream(data)
     val in = new ObjectInputStream(bais);
@@ -112,14 +109,34 @@ object TPMSigning {
     }
   }
 
-  def verifyCertifiedNonce(dataToValidate: TcTssValidation, certifyKey: TcIRsaKey): Boolean = {
-    val pubKey = new TcTpmPubkey(certifyKey.getPubKey());
-    val pubKeyAsBlob = pubKey.getPubKey().getKey();
-    val pubKeyDigest = pubKeyAsBlob.sha1();
-    val plaindata = dataToValidate.getData()
-    val certifiedData = new TcTpmCertifyInfo(plaindata);
-    val certifiedDataPubKeyDigest = certifiedData.getPubKeyDigest().getDigest();
-    pubKeyDigest == certifiedDataPubKeyDigest
+  /**
+   * The validation data is encrypted with the private part of the signing key.
+   * After the data is decrypted with the public signing key part, the hash of getData must be equal to
+   * this decrypted data.
+   */
+  def verifyCertifiedNonce(dataToValidate: TcTssValidation, certifyKey: Option[TcIRsaKey]): Boolean = {
+    val pubKey = new TcTpmPubkey(certifyKey.getOrElse(return false).getPubKey());
+    val plaindata = TcCrypto.decryptRsaEcbPkcs1Padding(pubKey, dataToValidate.getValidationData())
+    val plainDataDigest = decryptValidationData(dataToValidate, pubKey);
+    isEqual(dataToValidate, plainDataDigest);
   }
-
+  /**
+   * Only the last 20 bytes are returned, they contain the sha1 hash. The first 15 bytes must not be used
+   * for verifying (fixed data?)
+   */
+  private def decryptValidationData(dataToValidate: TcTssValidation, pubKey: TcTpmPubkey): TcBlobData = {
+    val decrypted = TcCrypto.decryptRsaEcbPkcs1Padding(pubKey, dataToValidate.getValidationData())
+    val result = TcBlobData.newByteArray(decrypted.asByteArray(), 15, 20);
+    result
+  }
+  private def isEqual(dataToValidate: TcTssValidation, plainDataDigest: TcBlobData): Boolean = {
+    if (dataToValidate.getData().sha1() == plainDataDigest) {
+      true
+    } else {
+      TPMDebugger.log(getClass().getSimpleName() + ": Digests are not equal");
+      TPMDebugger.log(getClass().getSimpleName() + ": " + dataToValidate.getData().sha1().toHexStringNoWrap());
+      TPMDebugger.log(getClass().getSimpleName() + ": " + plainDataDigest.toHexStringNoWrap());
+      false
+    }
+  }
 }

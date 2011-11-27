@@ -118,7 +118,7 @@ object TPM {
     //    println("key:"+key)
     //    val aKey = getNewCertifiedKey()
     //    println(uuids);
-    //    TPMContext.context.loadKeyByBlob(srk_, getKeyBlobData(aKey))
+        //TPMContext.context.loadKeyByBlob(srk_, getKeyBlobData(aKey))
     //    TPMContext.context.getRegisteredKeysByUuidSystem(uuids.head._2).foreach(println);
     //    //val destKey = migrateKey()
     val aKey1 = TPMKeymanager.getBindingKey(TPMKeymanager.createBindingKey())
