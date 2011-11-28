@@ -99,7 +99,7 @@ object TPMKeymanager {
       Some(TcBlobData.newByteArray(data))
     } catch {
       case e: FileNotFoundException =>
-        TPMDebugger.log("There is no file [" + "/tmp/bc:ae:c5:2a:90:c2.pub" + "]", "info");
+        TPMDebugger.log("There is no file [" + filename + "]", "info");
         None
     }
 

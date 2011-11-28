@@ -74,7 +74,7 @@ object Dispatchertest {
     	 * first of all init the kernel module!
     	 */
       initKernelModule()
-      exportPublicSrk()
+      //exportPublicSrk()
       while (true) {
         consoleHelp
         val command = scala.Console.readLine("Type your command:")
