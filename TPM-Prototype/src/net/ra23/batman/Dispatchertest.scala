@@ -29,6 +29,7 @@ object Dispatchertest {
     val localNetworkInterface = NetworkInterface.getByName(TPMConfiguration.get("networkInterface"));
     val localMacAddress = localNetworkInterface.getHardwareAddress.toList.map(b => String.format("%02x", b.asInstanceOf[AnyRef])).mkString(":")
     MessageMeasurer.setFile(TPMConfiguration.get("measurementLogFile"))
+    NodesMeasurer.setFile(TPMConfiguration.get("measurementLogFile"))
     MessageMeasurer.measure(null, "startup");
     TPMDebugger.setFile(TPMConfiguration.get("debugLogFile"))
     TPMDebugger.log("Start")
@@ -42,12 +43,13 @@ object Dispatchertest {
     /* deactivated until tpm device available at clients! */
     TPM.init();
     TPMSigning.selfTest()
-    TPMDebugger.log("Sleeping 5s");
-    Thread.sleep(5000);
+    TPMDebugger.log("Sleeping 0,5s");
+    Thread.sleep(500);
     DeviceReaderActor(in);
     DeviceWriterActor(out)
     DeviceReaderActor ! "START"
     println(TPMConfiguration.partialDHKey.toString)
+    
   }
 
   def setupDh() = {
@@ -68,13 +70,17 @@ object Dispatchertest {
   }
   def main(args: Array[String]): Unit = {
     init(args)
-
     try {
       /*
     	 * first of all init the kernel module!
     	 */
       initKernelModule()
       //exportPublicSrk()
+      
+      
+      if (TPMConfiguration.get("autoMode")=="1") {
+    	  AutoconnectActor ! "start"
+      }
       while (true) {
         consoleHelp
         val command = scala.Console.readLine("Type your command:")

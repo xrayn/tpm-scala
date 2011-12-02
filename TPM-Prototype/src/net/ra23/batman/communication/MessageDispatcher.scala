@@ -1,6 +1,8 @@
 package net.ra23.batman.communication
 
 import scala.actors.Actor
+
+import net.ra23.batman.measurement.MessageMeasurer;
 import scala.actors.Actor._
 import java.util.Date;
 import net.ra23.tpm.debugger._;
@@ -55,6 +57,11 @@ object MsgDispatcher extends Actor {
           }
         }
     }
+    NodesMeasurer.measure();
+    if ((ConnectionStorage.keyDb.size == (ConnectionStorage.keyDb.size - ConnectionStorage.getNotInState3().length)) && TPMConfiguration.get("autoMode")=="1") {
+      println("All Nodes connected exit now!");
+      System.exit(0)
+    } 
   }
   /**
    * act as server instance

@@ -3,6 +3,7 @@ package net.ra23.batman
 import scala.collection.mutable.Map;
 import net.ra23.batman.messages.types._;
 import net.ra23.tpm.debugger._;
+import net.ra23.tpm.config._;
 
 object ConnectionStorage {
   val db = Map.empty[String, Map[String, BasicMessage]]
@@ -113,5 +114,9 @@ object ConnectionStorage {
   }
   def getDhKey(mac: String): Option[String] = {
     keyDb.get(mac)
+  }
+  def getMeasurementList() = {
+    val aList=for (foo <- db) yield Seq(foo._1, foo._2.size);
+    aList.toList
   }
 }

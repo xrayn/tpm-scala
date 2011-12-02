@@ -55,6 +55,7 @@ import iaik.tc.tss.api.structs.tpm._;
 import java.security.Signature;
 import net.ra23.tpm.validate.TPMValidation;
 import org.apache.commons.codec.binary.Base64;
+import net.ra23.batman.messages.fragmented._;
 
 class TPMSigning {
 
@@ -93,17 +94,45 @@ object TPMSigning {
     val result = TPMContext.context.getTpmObject.quote(TPMKeymanager.signingKey, pcrComp, null)
     result
   }
-  def verifyCertifiedNonce(dataToValidateBase64: String, certifyKey: Option[TcIRsaKey]): Boolean = {
+  def verifyCertifiedNonce(dataToValidateBase64: String, certifyKey: Option[TcIRsaKey], mac: String = ""): Boolean = {
     val data = new Base64().decode(dataToValidateBase64);
     val bais = new ByteArrayInputStream(data)
-    val in = new ObjectInputStream(bais);
     try {
+    val in = new ObjectInputStream(bais);
       val dataToValidate = in.readObject().asInstanceOf[TPMValidation];
       verifyCertifiedNonce(dataToValidate.getAsTcTssValidation(), certifyKey)
     } catch {
+      case e: java.io.StreamCorruptedException => {
+        TPMDebugger.log(getClass().getSimpleName() + "Corrupted steam, just continue!.", "info");
+        false
+      }
       case e: Exception => {
-        TPMDebugger.log(getClass().getSimpleName() + "Something went wrong while reading utf8 string! Handling message as invalid and continue. Exception info follows:");
-        TPMDebugger.log(getClass().getSimpleName() + e.getStackTraceString);
+        /**
+         * if a packet in a fragmented sequence gets not received (for whatever reason) it is possible,
+         * that this message gets invalid.
+         * Lets assume the fragmented message is in two parts. If sequence #1 is not received, sequence #2 is inserted into
+         * the fragmented message storage. Now a new message with sequence #1 is received.
+         * The storage now assumes the message is complete merges it and passes it to this function.
+         * When the decryption kicks in (decryptRsaEcbPkcs1Padding(...)) the invalid message can not be decrypted and a Exception
+         * is thrown.
+         * 
+         *  Currently this is the only part in the program where this can be recognized.
+         *  (it would be far more complicated to validate the consistency of the message [e.g. introducing another number
+         *  which identifies each message sequence list])
+         *  
+         *  For the further handling it doesn't matter if the message is wrong by mistake or by intention (from an attacker)
+         *  the verification process will just fail and the program will continue.
+         *  To fix the sequence bug, we empty the FragmentedMessage Storage.
+         *   
+         *  This only works if the next sequence message is already in the FramgentedStorage. (We will see how this works out).
+         *  
+         *  @todo: Implement clean sequence handling! 
+         *  
+         */
+        
+        TPMDebugger.log(getClass().getSimpleName() + "Something went wrong! Handling message as invalid and continue.");
+        TPMDebugger.log(getClass().getSimpleName() + "Maybe sequences get messed up cleaning the FragmentedMessageStorage for mac ["+mac+"]");
+        FragmentedMessageStorage.cleanup(mac);
         false
       }
     }
@@ -116,7 +145,7 @@ object TPMSigning {
    */
   def verifyCertifiedNonce(dataToValidate: TcTssValidation, certifyKey: Option[TcIRsaKey]): Boolean = {
     val pubKey = new TcTpmPubkey(certifyKey.getOrElse(return false).getPubKey());
-    val plaindata = TcCrypto.decryptRsaEcbPkcs1Padding(pubKey, dataToValidate.getValidationData())
+    //val plaindata = TcCrypto.decryptRsaEcbPkcs1Padding(pubKey, dataToValidate.getValidationData())
     val plainDataDigest = decryptValidationData(dataToValidate, pubKey);
     isEqual(dataToValidate, plainDataDigest);
   }

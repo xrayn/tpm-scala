@@ -58,5 +58,17 @@ object FragmentedMessageStorage {
     }
     res
   }
+  def cleanup(mac: String) {
+    println(storage)
+	 if (storage.isDefinedAt("02f::s::"+mac)){
+	   storage.remove("02f::s::"+mac);
+	   TPMDebugger.log(getClass().getSimpleName() + ":cleanup[02f::s::"+mac+"] succeeded", "info");
+	 } else if (storage.isDefinedAt("02f::c::"+mac)){
+	   storage.remove("02f::c::"+mac);
+	   TPMDebugger.log(getClass().getSimpleName() + ":cleanup[02f::c::"+mac+"] succeeded", "info");
+	 } else {
+	   TPMDebugger.log(getClass().getSimpleName() + ":cleanup[02f::s::"+mac+"] did not succeeded => caution, maybe sequence number bug not handled properly", "info");
+	 }
+  }
 
 }

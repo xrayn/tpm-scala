@@ -33,6 +33,6 @@ case class TmqMessageHandler(message: TmqMessage, as: String) extends BasicMessa
 
   def checkQoute(): Boolean = {
     val akey = TPMKeymanager.createRsaKeyObject(TPMKeymanager.importPublicKey(TPMConfiguration.get("signingKeyPath") + message.mac + ".key.pub"))
-    TPMSigning.verifyCertifiedNonce(message.QUOTE, akey)
+    TPMSigning.verifyCertifiedNonce(message.QUOTE, akey, message.mac)
   }
 }

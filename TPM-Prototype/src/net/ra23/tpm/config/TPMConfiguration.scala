@@ -21,6 +21,7 @@ object TPMConfiguration {
 		 <debugLogFile>/tmp/client1.log</debugLogFile>
 		 <measurementLogFile>/tmp/measurement.log</measurementLogFile>
 		 <daemonMode>0</daemonMode>
+		  <autoMode>0</autoMode>
 	</general>
     </config>
   def fromXML(node: scala.xml.Node) = {

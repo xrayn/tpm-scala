@@ -42,7 +42,7 @@ object AutoconnectActor extends Actor {
         count = count + 1;
         TPMDebugger.log(getClass().getSimpleName() + ": Autoconnect cicle [" + count + "]", "debug");
         for (mac <- ConnectionStorage.getNotInState3()) {
-          Thread.sleep(3000);
+          Thread.sleep(500);
           var result = List[Option[Unicast]]()
           val key = ConnectionStorage.getDhKey(mac);
           if (key != None) {
@@ -52,7 +52,7 @@ object AutoconnectActor extends Actor {
             DeviceWriterActor ! result.reverse
           }
         }
-        Thread.sleep(1000);
+        Thread.sleep(500);
       }
     }
   }
