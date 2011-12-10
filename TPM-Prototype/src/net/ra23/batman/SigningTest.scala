@@ -19,7 +19,7 @@ object SigningTest {
     val localMacAddress = localNetworkInterface.getHardwareAddress.toList.map(b => String.format("%02x", b.asInstanceOf[AnyRef])).mkString(":")
     TPMConfiguration.mac = localMacAddress
     TPMContext.context.connect();
-    TPMSigning.test();
+    TPMSigning.measure();
   }
 
 }

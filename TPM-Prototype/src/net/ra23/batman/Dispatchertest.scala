@@ -43,8 +43,7 @@ object Dispatchertest {
     /* deactivated until tpm device available at clients! */
     TPM.init();
     TPMSigning.selfTest()
-    TPMDebugger.log("Sleeping 0,5s");
-    Thread.sleep(500);
+    //TPMSigning.measure();
     DeviceReaderActor(in);
     DeviceWriterActor(out)
     DeviceReaderActor ! "START"

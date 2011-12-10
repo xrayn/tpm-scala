@@ -62,7 +62,33 @@ class TPMSigning {
 }
 object TPMSigning {
   val tpm = TPM
-
+  def measure() {
+    val fstream = new FileWriter("/tmp/quote_verify.csv");
+    val out = new BufferedWriter(fstream);
+    val akey = TPMKeymanager.createRsaKeyObject(TPMKeymanager.importPublicKey(TPMConfiguration.get("signingKeyPath") + TPMConfiguration.mac + ".key.pub"));
+    for (i <- 1 to 1000) {
+      val result = singleGetQuote()
+      val quoteTime = result._1
+      val verifyTime = singleVerifyQuote(result._2, akey);
+      out.write("QUOTE," + quoteTime + "\n")
+      out.write("VERIFY," + verifyTime + "\n")
+    }
+    out.close();
+  }
+  def singleGetQuote(): Tuple2[Long, String] = {
+    val start = System.nanoTime();
+    val result = TPMSigning.getQuoteBase64();
+    println(result);
+    val end = System.nanoTime();
+    Tuple2(end - start, result);
+  }
+  def singleVerifyQuote(dataToValidateBase64: String, certifyKey: Option[TcIRsaKey], mac: String = ""): Long = {
+    val start = System.nanoTime();
+    val result = verifyCertifiedNonce(dataToValidateBase64, certifyKey);
+    val end = System.nanoTime();
+    println(result);
+    end - start
+  }
   def test() = {
     println(verifyCertifiedNonce(getQuoteBase64(), TPMKeymanager.createRsaKeyObject(TPMKeymanager.importPublicKey("/tmp/bc:ae:c5:2a:90:c2.key.pub"))))
   }
@@ -98,7 +124,7 @@ object TPMSigning {
     val data = new Base64().decode(dataToValidateBase64);
     val bais = new ByteArrayInputStream(data)
     try {
-    val in = new ObjectInputStream(bais);
+      val in = new ObjectInputStream(bais);
       val dataToValidate = in.readObject().asInstanceOf[TPMValidation];
       verifyCertifiedNonce(dataToValidate.getAsTcTssValidation(), certifyKey)
     } catch {
@@ -115,23 +141,23 @@ object TPMSigning {
          * The storage now assumes the message is complete merges it and passes it to this function.
          * When the decryption kicks in (decryptRsaEcbPkcs1Padding(...)) the invalid message can not be decrypted and a Exception
          * is thrown.
-         * 
+         *
          *  Currently this is the only part in the program where this can be recognized.
          *  (it would be far more complicated to validate the consistency of the message [e.g. introducing another number
          *  which identifies each message sequence list])
-         *  
+         *
          *  For the further handling it doesn't matter if the message is wrong by mistake or by intention (from an attacker)
          *  the verification process will just fail and the program will continue.
          *  To fix the sequence bug, we empty the FragmentedMessage Storage.
-         *   
+         *
          *  This only works if the next sequence message is already in the FramgentedStorage. (We will see how this works out).
-         *  
-         *  @todo: Implement clean sequence handling! 
-         *  
+         *
+         *  @todo: Implement clean sequence handling!
+         *
          */
-        
+
         TPMDebugger.log(getClass().getSimpleName() + "Something went wrong! Handling message as invalid and continue.");
-        TPMDebugger.log(getClass().getSimpleName() + "Maybe sequences get messed up cleaning the FragmentedMessageStorage for mac ["+mac+"]");
+        TPMDebugger.log(getClass().getSimpleName() + "Maybe sequences get messed up cleaning the FragmentedMessageStorage for mac [" + mac + "]");
         FragmentedMessageStorage.cleanup(mac);
         false
       }

@@ -58,7 +58,7 @@ object TPMTest {
   val tpm = TPM
   def main(args: Array[String]): Unit = {
     TPMKeymanager.exportPublicKey(TPMKeymanager.getSRK())
-    TPMSigning.test();
+    TPMSigning.measure();
   }
 
 }
