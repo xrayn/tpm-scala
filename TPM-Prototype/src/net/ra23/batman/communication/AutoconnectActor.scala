@@ -10,6 +10,7 @@ import net.ra23.tpm.config._;
 import net.ra23.batman.ConnectionStorage;
 import net.ra23.helper.PayloadHelper;
 import net.ra23.tpm.sign.TPMSigning;
+import net.ra23.batman.measurement.NodesMeasurer;
 
 object AutoconnectActor extends Actor {
   var count = 0;
@@ -41,14 +42,17 @@ object AutoconnectActor extends Actor {
     }
   }
   def shouldRun(mac: String, currentTime: Long): Boolean = {
-    // do not spam the client only send packets to a single node every 500 ms
-    if (state2Tracker.isDefinedAt(mac) && (currentTime - state2Tracker(mac) > 500*1000*1000)) {
+    // do not spam the client only send packets to a single node every 1 s
+    if (!state2Tracker.isDefinedAt(mac)) {
+      //println("[" + mac + "] run ->[" + currentTime + "]" + " first")
+      state2Tracker += mac -> currentTime
+      true
+    } else if (state2Tracker.isDefinedAt(mac) && (currentTime - state2Tracker(mac) > (2000000000L))) {
+      //println("[" + mac + "] run ->[" + currentTime + "]" + " delta [" + (currentTime - state2Tracker(mac)) + "]")
       state2Tracker(mac) = currentTime
       true
-    } else if (!state2Tracker.isDefinedAt(mac)) {
-      state2Tracker+= mac -> currentTime
-      true
     } else {
+      //println("[" + mac + "] no  ->[" + currentTime + "]" + " delta [" + (currentTime - state2Tracker(mac)) + "]")
       false
     }
   }
@@ -66,11 +70,18 @@ object AutoconnectActor extends Actor {
               val partialDhKey = key.get;
               for (payload <- PayloadHelper.splitPayload(TPMSigning.getQuoteBase64() + "::CLIENT_SML_HASH", TPMConfiguration.tmqSplitSize))
                 result = Some(Unicast("02::" + mac + "::02f::c::" + TPMConfiguration.mac + "::" + payload)) :: result
+              println("message sent")
               DeviceWriterActor ! result.reverse
+            } else {
+              println("no key yet");
             }
           }
         }
-        Thread.sleep(50);
+        if ((System.nanoTime() - startTime > 5000000000L) && (ConnectionStorage.keyDb.size == (ConnectionStorage.keyDb.size - ConnectionStorage.getNotInState3().length)) && TPMConfiguration.get("autoMode") == "1") {
+          println("All Nodes connected exit now! ["+((System.nanoTime() - startTime) / (1000*1000))+"] ms runtime");
+          System.exit(0)
+        }
+        Thread.sleep(100);
       }
     }
   }

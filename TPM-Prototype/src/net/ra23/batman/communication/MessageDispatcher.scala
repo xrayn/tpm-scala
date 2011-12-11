@@ -2,7 +2,7 @@ package net.ra23.batman.communication
 
 import scala.actors.Actor
 
-import net.ra23.batman.measurement.MessageMeasurer;
+
 import scala.actors.Actor._
 import java.util.Date;
 import net.ra23.tpm.debugger._;
@@ -14,6 +14,7 @@ import net.ra23.batman.messages._;
 import net.ra23.batman.measurement._;
 import net.ra23.batman.encyrption._;
 import net.ra23.batman._;
+import net.ra23.batman.communication._;
 
 object MsgDispatcher extends Actor {
   /**
@@ -21,12 +22,13 @@ object MsgDispatcher extends Actor {
    */
   var messageHandler: BasicMessageHandler = null;
   private def handleMessage(message: BasicMessage) {
-    val date = new Date();
+    val startTime = new Date().getTime();
     message match {
       case null => TPMDebugger.log(getClass().getSimpleName() + ": message was null!", "debug");
       case msg: TmcMessage => {
         // there is no follow up!
         //DeviceWriterActor !
+        
         messageHandler = TmcMessageHandler(msg, "broadcast") //.getFollowupMessageAsClient()
       }
       case msg: TmqMessage => {
@@ -58,10 +60,8 @@ object MsgDispatcher extends Actor {
         }
     }
     NodesMeasurer.measure();
-    if ((ConnectionStorage.keyDb.size == (ConnectionStorage.keyDb.size - ConnectionStorage.getNotInState3().length)) && TPMConfiguration.get("autoMode")=="1") {
-      println("All Nodes connected exit now!");
-      System.exit(0)
-    } 
+    //only exit if after 5 seconds no new nodes are found!
+    
   }
   /**
    * act as server instance
@@ -97,7 +97,6 @@ object MsgDispatcher extends Actor {
           if (message != None) {
             handleMessage(message.get)
           } else {
-            TPMDebugger.log("Received invalid message. Was ["+msg+"]")
           }
         };
       case _ => TPMDebugger.log("I have no idea what I just got.")

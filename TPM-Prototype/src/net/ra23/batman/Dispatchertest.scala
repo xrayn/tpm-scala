@@ -44,9 +44,13 @@ object Dispatchertest {
     TPM.init();
     TPMSigning.selfTest()
     //TPMSigning.measure();
-    DeviceReaderActor(in);
     DeviceWriterActor(out)
+    initKernelModule()
+    Thread.sleep(1000)
+    DeviceReaderActor(in)
     DeviceReaderActor ! "START"
+    
+
     println(TPMConfiguration.partialDHKey.toString)
     
   }
@@ -73,10 +77,7 @@ object Dispatchertest {
       /*
     	 * first of all init the kernel module!
     	 */
-      initKernelModule()
-      //exportPublicSrk()
-      
-      
+
       if (TPMConfiguration.get("autoMode")=="1") {
     	  AutoconnectActor ! "start"
       }
