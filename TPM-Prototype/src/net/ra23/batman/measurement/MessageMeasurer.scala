@@ -28,6 +28,10 @@ object MessageMeasurer {
         Logger.debug(message + ",END," + end.toString() + "," + ((end - start) / 1000) + "," + as.toUpperCase());
         start = 0L
       }
+      case "already_calculated" => {
+        Logger.debug(message + "" +as.toUpperCase());
+        start = 0L
+      }
       case _ => Logger.info(message)
     }
 

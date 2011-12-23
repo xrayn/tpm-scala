@@ -1,6 +1,7 @@
 package net.ra23.tpm.sign
 
 import java.math._;
+import net.ra23.batman.measurement._;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import iaik.tc.tss.api.constants.tcs.TcTcsErrors;
@@ -100,8 +101,8 @@ object TPMSigning {
       System.exit(-1)
     }
   }
-  def getQuoteBase64(): String = {
-    val dataToValidate = getQuote();
+  def getQuoteBase64(mac: String = ""): String = {
+    val dataToValidate = getQuote(mac);
     val baos = new ByteArrayOutputStream();
     val resultObject = new ObjectOutputStream(baos)
     resultObject.writeObject(new TPMValidation(dataToValidate))
@@ -109,7 +110,8 @@ object TPMSigning {
     new Base64().encodeAsString(baos.toByteArray());
   }
 
-  def getQuote(): TcTssValidation = {
+  def getQuote(mac: String): TcTssValidation = {
+    val start = System.nanoTime();
     val validationInput = new TcTssValidation();
     val nonceByteArray = Array[Byte](0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4A, 0x4B, 0x4C, 0x4D, 0x4E, 0x4F, 0x50, 0x51, 0x52, 0x53, 0x54)
     val nonce = TcBlobData.newByteArray(nonceByteArray);
@@ -118,15 +120,25 @@ object TPMSigning {
     pcrComp.selectPcrIndex(1);
     pcrComp.selectPcrIndex(10);
     val result = TPMContext.context.getTpmObject.quote(TPMKeymanager.signingKey, pcrComp, null)
+    val end = System.nanoTime();
+    if (mac != "")
+    MessageMeasurer.measure(mac + "," + getClass().getSimpleName().toUpperCase() +","+((end-start)/1000)+",", "already_calculated", "TPM_QUOTE_CALCULATION_TIME");
     result
   }
   def verifyCertifiedNonce(dataToValidateBase64: String, certifyKey: Option[TcIRsaKey], mac: String = ""): Boolean = {
+    
     val data = new Base64().decode(dataToValidateBase64);
     val bais = new ByteArrayInputStream(data)
     try {
+      
       val in = new ObjectInputStream(bais);
       val dataToValidate = in.readObject().asInstanceOf[TPMValidation];
-      verifyCertifiedNonce(dataToValidate.getAsTcTssValidation(), certifyKey)
+      val start = System.nanoTime();
+      val res = verifyCertifiedNonce(dataToValidate.getAsTcTssValidation(), certifyKey)
+      val end = System.nanoTime();
+      if (mac != "")
+      MessageMeasurer.measure(mac + "," + getClass().getSimpleName().toUpperCase() +","+((end-start)/1000)+",", "already_calculated", "TPM_QUOTE_VERIFICATION_TIME");
+      res
     } catch {
       case e: java.io.StreamCorruptedException => {
         TPMDebugger.log(getClass().getSimpleName() + "Corrupted steam, just continue!.", "info");

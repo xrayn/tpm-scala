@@ -68,7 +68,7 @@ object AutoconnectActor extends Actor {
             val key = ConnectionStorage.getDhKey(mac);
             if (key != None) {
               val partialDhKey = key.get;
-              for (payload <- PayloadHelper.splitPayload(TPMSigning.getQuoteBase64() + "::CLIENT_SML_HASH", TPMConfiguration.tmqSplitSize))
+              for (payload <- PayloadHelper.splitPayload(TPMSigning.getQuoteBase64(mac) + "::CLIENT_SML_HASH", TPMConfiguration.tmqSplitSize))
                 result = Some(Unicast("02::" + mac + "::02f::c::" + TPMConfiguration.mac + "::" + payload)) :: result
               println("message sent")
               DeviceWriterActor ! result.reverse
