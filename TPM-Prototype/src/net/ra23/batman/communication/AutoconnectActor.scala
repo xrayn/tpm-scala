@@ -47,7 +47,9 @@ object AutoconnectActor extends Actor {
       //println("[" + mac + "] run ->[" + currentTime + "]" + " first")
       state2Tracker += mac -> currentTime
       true
-    } else if (state2Tracker.isDefinedAt(mac) && (currentTime - state2Tracker(mac) > (500000000L))) {
+    } else if (state2Tracker.isDefinedAt(mac) && (currentTime - state2Tracker(mac) > (3000000000L))) {
+      /* do not flood the client with requests. Wait at least given seconds. Currently 3 seconds*/
+      
       //println("[" + mac + "] run ->[" + currentTime + "]" + " delta [" + (currentTime - state2Tracker(mac)) + "]")
       state2Tracker(mac) = currentTime
       true
@@ -80,6 +82,9 @@ object AutoconnectActor extends Actor {
         if ((System.nanoTime() - startTime > 3000000000L) && (ConnectionStorage.keyDb.size == (ConnectionStorage.keyDb.size - ConnectionStorage.getNotInState3().length)) && TPMConfiguration.get("autoMode") == "1") {
           println("All Nodes connected exit now! ["+((System.nanoTime() - startTime) / (1000*1000))+"] ms runtime");
           System.exit(0)
+        } else if ((System.nanoTime() - startTime > 30000000000L) &&  TPMConfiguration.get("autoMode") == "1") {
+          println("An Error occured. Could not connect all nodes, waited 30 seconds. Exiting now.");
+          System.exit(1)
         }
         Thread.sleep(100);
       }
