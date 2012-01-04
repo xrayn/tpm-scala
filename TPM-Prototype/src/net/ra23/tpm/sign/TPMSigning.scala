@@ -73,6 +73,7 @@ object TPMSigning {
       val verifyTime = singleVerifyQuote(result._2, akey);
       out.write("QUOTE," + quoteTime + "\n")
       out.write("VERIFY," + verifyTime + "\n")
+      out.flush();
     }
     out.close();
   }

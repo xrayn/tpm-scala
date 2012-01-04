@@ -47,7 +47,7 @@ object AutoconnectActor extends Actor {
       //println("[" + mac + "] run ->[" + currentTime + "]" + " first")
       state2Tracker += mac -> currentTime
       true
-    } else if (state2Tracker.isDefinedAt(mac) && (currentTime - state2Tracker(mac) > (3000000000L))) {
+    } else if (state2Tracker.isDefinedAt(mac) && (currentTime - state2Tracker(mac) > (5000000000L))) {
       /* do not flood the client with requests. Wait at least given seconds. Currently 3 seconds*/
       
       //println("[" + mac + "] run ->[" + currentTime + "]" + " delta [" + (currentTime - state2Tracker(mac)) + "]")
