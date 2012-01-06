@@ -67,7 +67,7 @@ object TPMSigning {
     val fstream = new FileWriter("/tmp/quote_verify.csv");
     val out = new BufferedWriter(fstream);
     val akey = TPMKeymanager.createRsaKeyObject(TPMKeymanager.importPublicKey(TPMConfiguration.get("signingKeyPath") + TPMConfiguration.mac + ".key.pub"));
-    for (i <- 1 to 1000) {
+    for (i <- 1 to TPMConfiguration.get("measureQuote").toInt) {
       val result = singleGetQuote()
       val quoteTime = result._1
       val verifyTime = singleVerifyQuote(result._2, akey);

@@ -22,6 +22,7 @@ object TPMConfiguration {
 		 <measurementLogFile>/tmp/measurement.log</measurementLogFile>
 		 <daemonMode>0</daemonMode>
 		  <autoMode>0</autoMode>
+		  <measureQuote>0</measureQuote>
 	</general>
     </config>
   def fromXML(node: scala.xml.Node) = {

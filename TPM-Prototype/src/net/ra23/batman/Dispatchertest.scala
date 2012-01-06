@@ -22,8 +22,8 @@ object Dispatchertest {
   val device = DeviceReaderActor.device
   val baseDir = new File("").getAbsolutePath();
   def init(args: Array[String]) = {
-    val configfile = baseDir+"/etc/"+args(0);
-    TPMDebugger.log("Loading config from "+ configfile);
+    val configfile = baseDir + "/etc/" + args(0);
+    TPMDebugger.log("Loading config from " + configfile);
     TPMConfiguration.fromXmlFile(configfile)
     println(TPMConfiguration);
     val localNetworkInterface = NetworkInterface.getByName(TPMConfiguration.get("networkInterface"));
@@ -36,23 +36,25 @@ object Dispatchertest {
     TPMConfiguration.mac = localMacAddress
     val in = TPMConfiguration.get("kernelCommDeviceReader");
     val out = List(TPMConfiguration.get("kernelCommDeviceWriter"));
-    
+
     TPMDebugger.log("infile loaded");
     Thread.sleep(500)
     TPMDebugger.log("initialize tpm");
     /* deactivated until tpm device available at clients! */
     TPM.init();
     TPMSigning.selfTest()
-    //TPMSigning.measure();
+    if (TPMConfiguration.get("measureQuote") != "0") {
+      TPMSigning.measure();
+    }
     DeviceWriterActor(out)
+
     initKernelModule()
     Thread.sleep(1000)
     DeviceReaderActor(in)
     DeviceReaderActor ! "START"
-    
 
     println(TPMConfiguration.partialDHKey.toString)
-    
+
   }
 
   def setupDh() = {
@@ -78,8 +80,8 @@ object Dispatchertest {
     	 * first of all init the kernel module!
     	 */
 
-      if (TPMConfiguration.get("autoMode")=="1") {
-    	  AutoconnectActor ! "start"
+      if (TPMConfiguration.get("autoMode") == "1") {
+        AutoconnectActor ! "start"
       }
       while (true) {
         consoleHelp
@@ -105,11 +107,11 @@ object Dispatchertest {
             connect();
           }
           case c: String if command.startsWith("autoconnect") => {
-            val cmd = command.replace("autoconnect","").trim();
+            val cmd = command.replace("autoconnect", "").trim();
             println(cmd);
             AutoconnectActor ! cmd
           }
-          
+
           case c: String if command == "s" => {
             printStats();
           }
@@ -144,7 +146,7 @@ object Dispatchertest {
   }
   def exportPublicSrk() {
     println("[Exporting public SRK ......]")
-    TPMKeymanager.exportPublicKey(TPMKeymanager.getSRK(), baseDir +"/srk_keys/"+ TPMConfiguration.mac + ".key")
+    TPMKeymanager.exportPublicKey(TPMKeymanager.getSRK(), baseDir + "/srk_keys/" + TPMConfiguration.mac + ".key")
   }
   def injectTmqMessage(): Unit = {
     println("[Testing tmq & tmd ......]")
