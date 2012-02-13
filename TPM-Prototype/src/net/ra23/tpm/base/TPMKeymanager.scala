@@ -46,9 +46,9 @@ object TPMKeymanager {
     var key: Option[TcIRsaKey] = None
     if (!new File(keyfile).isFile()) {
       exportSigningKey(keyfile)
-      key = Some(TPMContext.context.loadKeyByBlob(getSRK(), importPublicKey(keyfile).get));
+      key = Some(TPMContext.context.loadKeyByBlob(getSRK(), loadKeyFromFilesystem(keyfile).get));
     } else {
-      key = Some(TPMContext.context.loadKeyByBlob(getSRK(), importPublicKey(keyfile).get));
+      key = Some(TPMContext.context.loadKeyByBlob(getSRK(), loadKeyFromFilesystem(keyfile).get));
     }
     TPMPolicy.applyPolicy(TPMPolicy.keyUsgPolicy, key.get)
     TPMPolicy.applyPolicy(TPMPolicy.keyMigPolicy, key.get)
@@ -85,7 +85,7 @@ object TPMKeymanager {
     }
 
   }
-  def importPublicKey(filename: String): Option[TcBlobData] = {
+  def loadKeyFromFilesystem(filename: String): Option[TcBlobData] = {
     val file = new File(filename);
     var fiStream: Option[FileInputStream] = None;
     try {
@@ -102,7 +102,9 @@ object TPMKeymanager {
         TPMDebugger.log("There is no file [" + filename + "]", "info");
         None
     }
-
+  } 
+  def importPublicKey(filename: String): Option[TcBlobData] = {
+		  loadKeyFromFilesystem(filename);
   }
 
   def getSRK() = {
